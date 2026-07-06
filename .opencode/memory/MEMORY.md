@@ -6,7 +6,7 @@
 
 - **Bundle Name**: `com.example.jianlishengcheng`
 - **目标系统**: HarmonyOS 4.0+（API 10+）
-- **当前阶段**: MVP Phase 1 — 框架搭建完成，Mock 生成链路跑通
+- **当前阶段**: MVP Phase 2 — 简历编辑器功能开发，8 模块折叠卡片式编辑 + 文本导入入口
 
 ## 核心原则
 
@@ -58,17 +58,28 @@ entry/src/main/ets/
 │   ├── ResumeForm.ets              # 5 步 Stepper 表单 — 信息录入
 │   ├── Generating.ets              # 生成中页面 — 进度动画 + 小贴士
 │   ├── ResumePreview.ets           # 简历预览页 — 模板渲染 + 导出入口
-│   ├── ResumeEditor.ets            # 在线编辑页 — 富文本调整
+│   ├── ResumeEditor.ets            # 在线编辑页 — 8 模块折叠卡片式编辑器（含文本导入入口）
 │   └── Score.ets                   # 评分页 — 四维评分 + AI 建议
-├── components/                     # UI 组件
-│   ├── ResumeCard.ets              # 简历卡片组件
-│   ├── TemplateItem.ets            # 模板缩略图组件
-│   ├── FormStepIndicator.ets       # Stepper 步骤指示器
-│   └── EmptyState.ets              # 空状态占位组件
+├── components/                          # UI 组件
+│   ├── ResumeCard.ets                   # 简历卡片组件
+│   ├── TemplateItem.ets                 # 模板缩略图组件
+│   ├── FormStepIndicator.ets            # Stepper 步骤指示器
+│   ├── EmptyState.ets                   # 空状态占位组件
+│   ├── CollapsibleSection.ets           # 通用折叠卡片（核心复用组件，三角指示器 + 展开动画）
+│   ├── PersonalInfoEditor.ets           # 个人信息编辑器（11 字段，@ObjectLink 绑定）
+│   ├── ItemListEditor.ets               # 通用多条目列表编辑器（增/删 + @BuilderParam 插槽）
+│   ├── EditableSectionCard.ets          # 可折叠卡片容器（替代样式，带阴影 + 计数徽章）
+│   ├── EditableStringList.ets           # 字符串数组编辑组件（增/删/改）
+│   ├── ProjectSection.ets               # 项目经历章节组件（@Link 绑定，含亮点 + 技术栈列表）
+│   ├── SkillItem.ets                    # 单条技能行组件（Slider 熟练度 + 删除）
+│   └── WorkExperienceSection.ets        # 工作经历章节组件（@Link 绑定，含成就列表）
 ├── utils/                          # 工具类
 │   ├── SampleData.ets              # 示例数据生成
 │   ├── MockGenerator.ets           # Mock AI 生成器（模拟端侧推理）
-│   └── PdfGenerator.ets            # PDF 导出骨架
+│   ├── PdfGenerator.ets            # PDF 导出骨架
+│   ├── IdGenerator.ets             # 唯一 ID 生成器（前缀 + 时间戳 + 计数器）
+│   ├── TextImporter.ets            # 文本导入器接口（isReady 骨架，待接入解析引擎）
+│   └── TextToResumeParser.ets      # 文本→简历解析器（抽象基类 + Mock + 工厂方法）
 └── napi/                           # NAPI 桥接
     └── resume_napi.ets             # 连接 ArkTS → C++ 引擎
 
@@ -90,7 +101,7 @@ entry/src/main/cpp/                 # C++ 引擎层（骨架就绪）
 | 信息填写 | `pages/ResumeForm` | 5 步 Stepper 表单 |
 | AI 生成中 | `pages/Generating` | 进度动画 + 小贴士轮播 |
 | 简历预览 | `pages/ResumePreview` | 模板渲染 + PDF 导出 |
-| 在线编辑 | `pages/ResumeEditor` | 富文本调整 |
+| 在线编辑 | `pages/ResumeEditor` | 8 模块折叠卡片式编辑 + 文本导入 |
 | AI 评分 | `pages/Score` | 四维评分 + 改进建议 |
 
 ## 状态管理
@@ -98,6 +109,15 @@ entry/src/main/cpp/                 # C++ 引擎层（骨架就绪）
 - `AppStorage` 全局状态：`currentResume`（当前简历）、`pendingResume`（待生成简历）
 - 页面间通过 `router.pushUrl`/`router.replaceUrl` 传递 `@ohos.router` 路由
 - 组件内状态使用 `@State`、`@Link` 装饰器
+- **编辑器深度绑定**：`@Observed` 类 + `@ObjectLink` 子组件绑定 + 展开运算符整体替换数组实现深层状态刷新
+- **跨页同步**：`AppStorage.setOrCreate` 自动保存 + `onPageShow` 读取最新数据
+- **展开折叠**：每个模块独立 `@State` 折叠标志位，编辑过的模块自动展开
+
+## 交互规范
+
+- **按压态**：所有可点击元素统一使用 `stateStyles({ pressed: {...} })` 提供视觉反馈
+- **文本导入**：`@CustomDialog` 模态框 + `TextImporter` 接口骨架，粘贴旧简历文本自动解析
+- **折叠卡片**：`CollapsibleSection` 通用组件 — 三角指示器（▶/▼）+ 条目计数 + 200ms 展开动画
 
 ## 技术栈
 
