@@ -2,7 +2,15 @@
  * 简历数据模型 — 定义简历的全部结构化字段
  */
 
+// ==================== 成就条目 ====================
+@Observed
+export class AchievementItem {
+  id: string = '';
+  content: string = '';
+}
+
 // ==================== 个人信息 ====================
+@Observed
 export class PersonalInfo {
   name: string = '';
   gender: string = '';
@@ -19,6 +27,7 @@ export class PersonalInfo {
 }
 
 // ==================== 教育经历 ====================
+@Observed
 export class Education {
   id: string = '';
   school: string = '';
@@ -31,6 +40,7 @@ export class Education {
 }
 
 // ==================== 工作经历 ====================
+@Observed
 export class WorkExperience {
   id: string = '';
   company: string = '';
@@ -40,9 +50,11 @@ export class WorkExperience {
   current: boolean = false;
   description: string = '';
   achievements: string[] = [];
+  achievementItems: AchievementItem[] = [];
 }
 
 // ==================== 项目经历 ====================
+@Observed
 export class Project {
   id: string = '';
   name: string = '';
@@ -55,6 +67,7 @@ export class Project {
 }
 
 // ==================== 技能 ====================
+@Observed
 export class Skill {
   id: string = '';
   name: string = '';
@@ -63,6 +76,7 @@ export class Skill {
 }
 
 // ==================== 语言能力 ====================
+@Observed
 export class Language {
   id: string = '';
   name: string = '';
@@ -70,6 +84,7 @@ export class Language {
 }
 
 // ==================== 证书/奖项 ====================
+@Observed
 export class Certificate {
   id: string = '';
   name: string = '';
@@ -78,6 +93,7 @@ export class Certificate {
 }
 
 // ==================== 自定义模块 ====================
+@Observed
 export class CustomSection {
   id: string = '';
   title: string = '';
@@ -85,6 +101,7 @@ export class CustomSection {
 }
 
 // ==================== 完整简历 ====================
+@Observed
 export class ResumeData {
   id: string = '';
   createdAt: string = '';
@@ -110,6 +127,7 @@ export enum ResumeGenerateStatus {
 }
 
 // ==================== 生成结果 ====================
+@Observed
 export class GenerateResult {
   status: ResumeGenerateStatus = ResumeGenerateStatus.IDLE;
   message: string = '';

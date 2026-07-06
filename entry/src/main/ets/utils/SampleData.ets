@@ -81,7 +81,8 @@ export class SampleData {
         '主导订单系统架构升级，支撑日均5000万订单处理，系统可用性提升至99.99%',
         '设计并实现分布式事务方案，将数据一致性错误率降低80%',
         '带领5人团队完成支付网关改造，支付成功率从97%提升至99.5%'
-      ]
+      ],
+      achievementItems: []
     };
     const work2: WorkExperience = {
       id: 'work-2',
@@ -95,7 +96,8 @@ export class SampleData {
         '开发智能调度系统，将骑手平均配送时间缩短15%',
         '重构地理围栏服务，查询性能提升10倍',
         '获年度最佳新人奖'
-      ]
+      ],
+      achievementItems: []
     };
     return [work1, work2];
   }

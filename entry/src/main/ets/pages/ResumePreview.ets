@@ -16,7 +16,7 @@ struct ResumePreview {
   @State resume: ResumeData = new ResumeData();
   @State currentTemplateType: string = 'classic';
 
-  aboutToAppear(): void {
+  onPageShow(): void {
     const data: ResumeData | undefined = AppStorage.get<ResumeData>('currentResume');
     if (data !== undefined) {
       this.resume = data;
@@ -86,6 +86,9 @@ struct ResumePreview {
           .height(44)
           .layoutWeight(1)
           .margin({ right: 12 })
+          .stateStyles({
+            pressed: { .backgroundColor('#E5E7EB') }
+          })
           .onClick(() => {
             router.pushUrl({ url: 'pages/ResumeEditor' });
           })
@@ -97,6 +100,9 @@ struct ResumePreview {
           .borderRadius(8)
           .height(44)
           .layoutWeight(1)
+          .stateStyles({
+            pressed: { .backgroundColor('#1649C7') }
+          })
           .onClick(() => {
             this.exportPdf();
           })

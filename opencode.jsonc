@@ -43,6 +43,7 @@
       "color": "#E67E22"
     }
   },
+  "plugin": ["C:/Users/HP/codegenie/ponytail/.opencode/plugins/ponytail.mjs"],
   "instructions": [".opencode/memory/MEMORY.md"],
   "provider": {
     "hwcloud": {
