@@ -1,0 +1,11 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/TemplatePicker",
+    "pages/ResumeForm",
+    "pages/Generating",
+    "pages/ResumePreview",
+    "pages/ResumeEditor",
+    "pages/Score"
+  ]
+}

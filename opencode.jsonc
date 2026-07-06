@@ -1,0 +1,99 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "team-lead",
+  "agent": {
+    "team-lead": {
+      "description": "Team Lead — 工作流协调中枢",
+      "mode": "primary",
+      "color": "#FFD700"
+    },
+    "build": {
+      "description": "HarmonyOS ArkTS build and delivery agent",
+      "mode": "primary",
+      "color": "#4DA3FF"
+    },
+    "debug": {
+      "description": "Runtime evidence debugging agent for HarmonyOS",
+      "mode": "primary",
+      "color": "#FF8A4D"
+    },
+    "harmonyos-expert": {
+      "description": "Read-only HarmonyOS documentation specialist",
+      "mode": "subagent",
+      "color": "#5AC88C"
+    },
+    "planner": {
+      "description": "策划 — 需求→策划案",
+      "mode": "subagent",
+      "color": "#FF6B6B"
+    },
+    "architect": {
+      "description": "架构师 — 策划案→程序方案",
+      "mode": "subagent",
+      "color": "#9B59B6"
+    },
+    "docs-updater": {
+      "description": "文档管理员 — 代码变更→文档同步",
+      "mode": "subagent",
+      "color": "#3498DB"
+    },
+    "git-admin": {
+      "description": "Git 管理员 — 所有 Git 操作",
+      "mode": "subagent",
+      "color": "#E67E22"
+    }
+  },
+  "instructions": [".opencode/memory/MEMORY.md"],
+  "provider": {
+    "hwcloud": {
+      "name": "HwCloud GLM",
+      "models": {
+        "glm-5-Mlyk21": {
+          "tool_call": true,
+          "limit": {
+            "context": 200000,
+            "output": 8192
+          }
+        }
+      },
+      "options": {
+        "baseURL": "https://api.modelarts-maas.com/v2"
+      }
+    }
+  },
+  "mcp": {
+    "deveco-mcp-server": {
+      "type": "local",
+      "command": ["node", "C:/Users/HP/codegenie/mcp/deveco-mcp-server/index.js"],
+      "enabled": true
+    },
+    "runtime-calibration": {
+      "type": "local",
+      "command": ["node", "C:/Users/HP/codegenie/mcp/runtime-calibration/index.js"],
+      "environment": {
+        "RC_API_KEY": "{env:RC_API_KEY}",
+        "RC_BASE_URL": "{env:RC_BASE_URL}",
+        "RC_MODEL_NAME": "{env:RC_MODEL_NAME}",
+        "RC_DEVICE": "{env:RC_DEVICE}",
+        "RC_HDC_PATH": "{env:RC_HDC_PATH}",
+        "DASHSCOPE_API_KEY": "{env:DASHSCOPE_API_KEY}"
+      },
+      "enabled": false
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 40000
+  },
+  "permission": {
+    "*": "allow"
+  },
+  "lsp": {
+    "oh-clangd": {
+      "disabled": true,
+      "command": ["node", "{env:CODEGENIE_LSP_WRAPPER}"],
+      "extensions": [".c", ".cpp", ".cc", ".cxx", ".c++", ".h", ".hpp", ".hh", ".hxx", ".h++"]
+    }
+  }
+}
