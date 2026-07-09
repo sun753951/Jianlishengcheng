@@ -14,7 +14,7 @@ from transformers import (
 )
 
 
-DEFAULT_BASE_MODEL = "sshleifer/tiny-gpt2"
+DEFAULT_BASE_MODEL = "uer/gpt2-chinese-cluecorpussmall"
 
 
 class JsonlTextDataset(Dataset):

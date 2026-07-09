@@ -22,33 +22,39 @@ def _join_limited(values: Iterable[str], limit: int) -> str:
 
 
 def _format_resume_sample(
+    person_id: int,
     name: str,
     education_items: List[str],
     experience_items: List[str],
     skill_items: List[str],
 ) -> Dict[str, str]:
     target_position = name or "Resume Candidate"
+    candidate_name = f"候选人{person_id}"
     education = "；".join(education_items) if education_items else "Education not provided"
     experience = "；".join(experience_items) if experience_items else "Experience not provided"
     skills = _join_limited(skill_items, 12) or "Skills not provided"
     project_experience = (
-        "Use the listed professional experience and skills to present a truthful project or work highlight."
+        "根据已提供的工作经历和技能，提炼真实的项目或工作亮点。"
     )
     prompt = (
-        "Generate a concise, truthful resume based only on the given structured data.\n"
-        f"Target position: {target_position}\n"
-        f"Education: {education}\n"
-        f"Skills: {skills}\n"
-        f"Experience: {experience}\n"
-        "Do not invent schools, companies, certificates, years, or achievements.\n"
-        "Resume:"
+        "你是一名简历生成助手。请只基于候选人提供的真实信息生成简历，不得编造学历、公司、证书、工作年限或项目成果。\n"
+        f"姓名：{candidate_name}\n"
+        f"目标岗位：{target_position}\n"
+        f"教育经历：{education}\n"
+        f"技能关键词：{skills}\n"
+        f"工作/实习经历：{experience}\n"
+        "输出结构：个人摘要、教育经历、核心技能、工作/实习经历、项目经历、自我评价。\n"
+        "简历："
     )
     response = (
-        f"Target Position: {target_position}\n\n"
-        f"Education:\n{education}\n\n"
-        f"Core Skills:\n{skills}\n\n"
-        f"Experience:\n{experience}\n\n"
-        f"Project / Work Highlight:\n{project_experience}"
+        f"姓名：{candidate_name}\n"
+        f"求职岗位：{target_position}\n\n"
+        f"个人摘要：\n围绕{target_position}岗位，突出候选人的教育背景、专业技能和真实工作经历。\n\n"
+        f"教育经历：\n{education}\n\n"
+        f"核心技能：\n{skills}\n\n"
+        f"工作/实习经历：\n{experience}\n\n"
+        f"项目经历：\n{project_experience}\n\n"
+        "自我评价：\n具备持续学习能力，重视真实表达、协作沟通和岗位匹配。"
     )
     return {
         "prompt": prompt,
@@ -104,6 +110,7 @@ def build_training_jsonl(dataset_dir: Path, output_path: Path, max_samples: int)
             if person_id not in education_map or person_id not in experience_map:
                 continue
             sample = _format_resume_sample(
+                person_id=person_id,
                 name=_clean(row.name),
                 education_items=education_map.get(person_id, [])[:3],
                 experience_items=experience_map.get(person_id, [])[:4],

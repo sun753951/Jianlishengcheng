@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from typing import List, Optional, Tuple
 
@@ -185,6 +186,42 @@ def build_rule_based_resume(form_data: ResumeFormData) -> str:
 {_fallback(form_data.selfEvaluation, '暂无自我评价，可补充个人优势和职业态度。')}"""
 
 
+def _compact_cjk_spaces(value: str) -> str:
+    return re.sub(r"(?<=[\u4e00-\u9fff])\s+(?=[\u4e00-\u9fff])", "", value)
+
+
+def _has_excessive_repetition(value: str) -> bool:
+    normalized = re.sub(r"\s+", "", value)
+    if re.search(r"([,，。；;:\-])\1{8,}", normalized):
+        return True
+    tokens = [token for token in re.split(r"[\s,，。；;:：/\-]+", value) if token]
+    if len(tokens) < 20:
+        return False
+    repeated_count = 0
+    previous = ""
+    for token in tokens:
+        if token == previous:
+            repeated_count += 1
+        previous = token
+    return repeated_count >= 8
+
+
+def _is_generated_resume_usable(form_data: ResumeFormData, generated: str) -> bool:
+    normalized = _compact_cjk_spaces(generated).strip()
+    if len(normalized) < 80:
+        return False
+    target_position = _normalize(form_data.targetPosition)
+    if target_position and target_position not in normalized:
+        return False
+    if _has_excessive_repetition(normalized):
+        return False
+    required_section_hits = 0
+    for section_title in ["个人摘要", "教育经历", "核心技能", "工作", "项目经历", "自我评价"]:
+        if section_title in normalized:
+            required_section_hits += 1
+    return required_section_hits >= 3
+
+
 class ResumeGenerator:
     def __init__(self) -> None:
         self.model_name = os.getenv("RESUME_MODEL_PATH", os.getenv("RESUME_MODEL_NAME", DEFAULT_MODEL_NAME))
@@ -212,9 +249,14 @@ class ResumeGenerator:
             return build_rule_based_resume(form_data), True
 
         try:
-            results = generator(prompt, max_new_tokens=260, do_sample=False)
-            generated = str(results[0].get("generated_text", "")).replace(prompt, "").strip()
-            if len(generated) < 40:
+            results = generator(
+                prompt,
+                max_new_tokens=260,
+                do_sample=False,
+                pad_token_id=getattr(generator.tokenizer, "eos_token_id", None),
+            )
+            generated = _compact_cjk_spaces(str(results[0].get("generated_text", "")).replace(prompt, "")).strip()
+            if not _is_generated_resume_usable(form_data, generated):
                 return build_rule_based_resume(form_data), True
             return generated, False
         except Exception:
