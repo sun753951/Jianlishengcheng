@@ -1,20 +1,16 @@
 {
   "string": [
     {
-      "name": "app_name",
-      "value": "智能简历"
-    },
-    {
       "name": "module_desc",
-      "value": "智能简历生成系统"
+      "value": "module description"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "智能简历生成应用"
+      "value": "description"
     },
     {
       "name": "EntryAbility_label",
-      "value": "智能简历"
+      "value": "label"
     }
   ]
 }

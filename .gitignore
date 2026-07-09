@@ -10,5 +10,12 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
-/oh-package-lock.json5
-nul
+/.venv
+/.cache
+/.pytest_cache
+**/__pycache__
+*.pyc
+/server/data/raw
+/server/data/processed
+/server/artifacts
+/server/training_runs
