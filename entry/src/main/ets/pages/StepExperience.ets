@@ -1,5 +1,6 @@
 import router from '@ohos.router';
 import { createDemoResumeForm, ResumeDataHolder } from '../model/ResumeModels';
+import { PRIMARY, PRIMARY_LIGHT, BG_PAGE, BORDER_DEFAULT } from '../style/Colors';
 
 @Entry
 @Component
@@ -13,14 +14,47 @@ struct StepExperience {
 
   @Builder
   private stepIndicator(current: number) {
-    Row({ space: 8 }) {
-      ForEach([1, 2, 3, 4], (step: number) => {
-        Circle({ width: 10, height: 10 })
-          .fill(step <= current ? '#2563EB' : '#D1D5DB');
+    Row({ space: 0 }) {
+      ForEach([1, 2, 3, 4], (step: number, index: number) => {
+        Row({ space: 0 }) {
+          Column({ space: 2 }) {
+            Column() {
+              if (step < current) {
+                Text('\u2713')
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFFFFF');
+              } else {
+                Text(`${step}`)
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(step === current ? '#FFFFFF' : '#9CA3AF');
+              }
+            }
+            .width(24)
+            .height(24)
+            .borderRadius(12)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(step <= current ? PRIMARY : '#E5E7EB');
+            Text(step === 1 ? '基本信息' : step === 2 ? '经历' : step === 3 ? '模板' : '预览')
+              .fontSize(9)
+              .fontColor(step <= current ? PRIMARY : '#9CA3AF');
+          }
+          .alignItems(HorizontalAlign.Center);
+
+          if (index < 3) {
+            Divider()
+              .width(24)
+              .height(1)
+              .color(step < current ? PRIMARY : '#E5E7EB')
+              .margin({ top: -8 });
+          }
+        }
       });
     }
     .justifyContent(FlexAlign.Center)
-    .margin({ bottom: 24 });
+    .width('100%')
+    .padding({ top: 8, bottom: 8 });
   }
 
   @Builder
@@ -52,7 +86,8 @@ struct StepExperience {
         .width('100%')
         .height(tall ? 120 : 80)
         .borderRadius(12)
-        .backgroundColor('#F9FAFB')
+        .backgroundColor(PRIMARY_LIGHT)
+        .border({ width: 1, color: BORDER_DEFAULT })
         .padding(12)
         .onChange(onChange);
     }
@@ -79,7 +114,8 @@ struct StepExperience {
                   .width('100%')
                   .height(48)
                   .borderRadius(12)
-                  .backgroundColor('#F9FAFB')
+                  .backgroundColor(PRIMARY_LIGHT)
+                  .border({ width: 1, color: BORDER_DEFAULT })
                   .onChange((value: string) => { this.targetPosition = value; });
               }
               .layoutWeight(1);
@@ -94,11 +130,11 @@ struct StepExperience {
             // Demo fill button
             Button('一键填充演示数据')
               .fontSize(14)
-              .fontColor('#7C3AED')
+              .fontColor(PRIMARY)
               .width('100%')
               .height(40)
               .borderRadius(10)
-              .backgroundColor('#F5F3FF')
+              .backgroundColor(PRIMARY_LIGHT)
               .onClick(() => {
                 const demo = createDemoResumeForm();
                 this.education = demo.education;
@@ -113,13 +149,14 @@ struct StepExperience {
           .padding(16)
           .borderRadius(16)
           .backgroundColor('#FFFFFF')
-          .border({ width: 1, color: '#DDE7FF' });
+          .border({ width: 1, color: BORDER_DEFAULT })
+          .shadow({ radius: 12, color: 'rgba(0,0,0,0.07)', offsetY: 4 });
         }
       }
       .layoutWeight(1);
 
       Row({ space: 12 }) {
-        Button('← 上一步')
+        Button('\u2190 上一步')
           .fontSize(15)
           .fontColor('#6B7280')
           .layoutWeight(1)
@@ -137,14 +174,14 @@ struct StepExperience {
             router.back();
           });
 
-        Button('下一步 →')
+        Button('下一步 \u2192')
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
           .fontColor('#FFFFFF')
           .layoutWeight(1)
           .height(48)
           .borderRadius(12)
-          .backgroundColor('#2563EB')
+          .backgroundColor(PRIMARY)
           .onClick(() => {
             const holder = ResumeDataHolder.getInstance();
             holder.formData.education = this.education;
@@ -162,6 +199,6 @@ struct StepExperience {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F8FAFC');
+    .backgroundColor(BG_PAGE);
   }
 }

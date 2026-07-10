@@ -4,32 +4,32 @@ export const TEMPLATE_OPTIONS: TemplateOption[] = [
   {
     templateType: ResumeTemplateType.STANDARD,
     title: '标准模板',
-    description: '适合通用岗位，结构完整，表达稳重。'
+    description: '蓝灰专业调，经典简历结构，适合通用岗位投递。'
   },
   {
     templateType: ResumeTemplateType.TECHNICAL,
     title: '技术岗位模板',
-    description: '突出技能栈、项目经验和岗位关键词。'
+    description: '深蓝科技风，技能胶囊高亮，突出技术栈与项目经验。'
   },
   {
     templateType: ResumeTemplateType.CAMPUS,
     title: '校园招聘模板',
-    description: '强调教育背景、实训经历和学习能力。'
+    description: '紫色活力调，圆形大头像，强调教育背景与成长潜力。'
   },
   {
     templateType: ResumeTemplateType.EXECUTIVE,
     title: '高级商务模板',
-    description: '黑白金点缀，突出履历层次和结果导向。'
+    description: '暖金商务风，金色分隔线点缀，稳重而有质感。'
   },
   {
     templateType: ResumeTemplateType.MINIMAL,
     title: '极简灰白模板',
-    description: '大留白、细分割线，适合正式投递。'
+    description: '极致简约，无头像纯文字排版，大留白适合正式投递。'
   },
   {
     templateType: ResumeTemplateType.BLACK_GOLD,
     title: '黑金双栏模板',
-    description: '深色侧栏和金色强调，展示高级质感。'
+    description: '深色高级感，金色高亮点缀，展示专业与信赖。'
   }
 ];
 

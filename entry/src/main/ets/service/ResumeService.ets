@@ -93,6 +93,18 @@ export function generateResumePreview(formData: ResumeFormData, templateType: Re
     createSection('工作/实习经历', workExperience)
   ];
 
+  if (templateType === ResumeTemplateType.TECHNICAL) {
+    sidebarSections = [
+      createSection('联系方式', `${fallbackText(formData.phone, '未填写电话')}\n${fallbackText(formData.email, '未填写邮箱')}`),
+      createSection('教育背景', education)
+    ];
+    mainSections = [
+      createSection('个人简介', summary),
+      createSection('项目经历', projectExperience),
+      createSection('工作/实习经历', workExperience)
+    ];
+  }
+
   if (templateType === ResumeTemplateType.CAMPUS) {
     sidebarSections = [
       createSection('教育背景', education),
@@ -119,15 +131,12 @@ export function generateResumePreview(formData: ResumeFormData, templateType: Re
   }
 
   if (templateType === ResumeTemplateType.EXECUTIVE) {
-    sidebarSections = [
-      createSection('核心信息', `${fallbackText(formData.phone, '未填写电话')}\n${fallbackText(formData.email, '未填写邮箱')}\n${education}`),
-      createSection('能力标签', splitSkillTags(formData.skills).join(' / '))
-    ];
+    sidebarSections = [];
     mainSections = [
-      createSection('职业摘要', summary),
-      createSection('关键项目', projectExperience),
-      createSection('经历亮点', workExperience),
-      createSection('个人优势', selfEvaluation)
+      createSection('教育背景', education),
+      createSection('工作经历', workExperience),
+      createSection('项目经验', projectExperience),
+      createSection('自我评价', selfEvaluation)
     ];
   }
 
@@ -148,7 +157,8 @@ export function generateResumePreview(formData: ResumeFormData, templateType: Re
     sidebarSections = [
       createSection('PROFILE', summary),
       createSection('CONTACT', `${fallbackText(formData.phone, '未填写电话')}\n${fallbackText(formData.email, '未填写邮箱')}`),
-      createSection('EDUCATION', education)
+      createSection('EDUCATION', education),
+      createSection('SKILLS', splitSkillTags(formData.skills).join(' / '))
     ];
     mainSections = [
       createSection('SIGNATURE PROJECT', projectExperience),

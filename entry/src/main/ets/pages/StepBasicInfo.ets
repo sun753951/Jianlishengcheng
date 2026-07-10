@@ -1,6 +1,7 @@
 import router from '@ohos.router';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 import { ResumeDataHolder } from '../model/ResumeModels';
+import { PRIMARY, PRIMARY_LIGHT, BG_PAGE, BORDER_DEFAULT } from '../style/Colors';
 
 @Entry
 @Component
@@ -12,14 +13,47 @@ struct StepBasicInfo {
 
   @Builder
   private stepIndicator(current: number) {
-    Row({ space: 8 }) {
-      ForEach([1, 2, 3, 4], (step: number) => {
-        Circle({ width: 10, height: 10 })
-          .fill(step <= current ? '#2563EB' : '#D1D5DB');
+    Row({ space: 0 }) {
+      ForEach([1, 2, 3, 4], (step: number, index: number) => {
+        Row({ space: 0 }) {
+          Column({ space: 2 }) {
+            Column() {
+              if (step < current) {
+                Text('\u2713')
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFFFFF');
+              } else {
+                Text(`${step}`)
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(step === current ? '#FFFFFF' : '#9CA3AF');
+              }
+            }
+            .width(24)
+            .height(24)
+            .borderRadius(12)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(step <= current ? PRIMARY : '#E5E7EB');
+            Text(step === 1 ? '基本信息' : step === 2 ? '经历' : step === 3 ? '模板' : '预览')
+              .fontSize(9)
+              .fontColor(step <= current ? PRIMARY : '#9CA3AF');
+          }
+          .alignItems(HorizontalAlign.Center);
+
+          if (index < 3) {
+            Divider()
+              .width(24)
+              .height(1)
+              .color(step < current ? PRIMARY : '#E5E7EB')
+              .margin({ top: -8 });
+          }
+        }
       });
     }
     .justifyContent(FlexAlign.Center)
-    .margin({ bottom: 24 });
+    .width('100%')
+    .padding({ top: 8, bottom: 8 });
   }
 
   @Builder
@@ -57,7 +91,8 @@ struct StepBasicInfo {
               .width('100%')
               .height(48)
               .borderRadius(12)
-              .backgroundColor('#F9FAFB')
+              .backgroundColor(PRIMARY_LIGHT)
+              .border({ width: 1, color: BORDER_DEFAULT })
               .onChange((value: string) => { this.name = value; });
           };
 
@@ -70,7 +105,7 @@ struct StepBasicInfo {
               .width('100%');
             Button(this.photoUri ? '已选择头像' : '选择头像')
               .fontSize(14)
-              .fontColor(this.photoUri ? '#059669' : '#2563EB')
+              .fontColor(this.photoUri ? '#059669' : PRIMARY)
               .width('100%')
               .height(48)
               .borderRadius(12)
@@ -88,7 +123,7 @@ struct StepBasicInfo {
                   // user cancelled
                 }
               });
-            Text('提示: 点击模拟器工具栏📷截图，截图存入图库后即可选择')
+            Text('提示: 点击模拟器工具栏截图，截图存入图库后即可选择')
               .fontSize(11).fontColor('#9CA3AF').width('100%').textAlign(TextAlign.Center);
           };
 
@@ -105,7 +140,8 @@ struct StepBasicInfo {
               .width('100%')
               .height(48)
               .borderRadius(12)
-              .backgroundColor('#F9FAFB')
+              .backgroundColor(PRIMARY_LIGHT)
+              .border({ width: 1, color: BORDER_DEFAULT })
               .onChange((value: string) => { this.phone = value; });
           };
 
@@ -122,7 +158,8 @@ struct StepBasicInfo {
               .width('100%')
               .height(48)
               .borderRadius(12)
-              .backgroundColor('#F9FAFB')
+              .backgroundColor(PRIMARY_LIGHT)
+              .border({ width: 1, color: BORDER_DEFAULT })
               .onChange((value: string) => { this.email = value; });
           };
         }
@@ -130,7 +167,8 @@ struct StepBasicInfo {
         .padding(16)
         .borderRadius(16)
         .backgroundColor('#FFFFFF')
-        .border({ width: 1, color: '#DDE7FF' });
+        .border({ width: 1, color: BORDER_DEFAULT })
+        .shadow({ radius: 12, color: 'rgba(0,0,0,0.07)', offsetY: 4 });
       }
       .layoutWeight(1);
 
@@ -146,14 +184,14 @@ struct StepBasicInfo {
           .enabled(false)
           .opacity(0.4);
 
-        Button('下一步 →')
+        Button('下一步 \u2192')
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
           .fontColor('#FFFFFF')
           .layoutWeight(1)
           .height(48)
           .borderRadius(12)
-          .backgroundColor('#2563EB')
+          .backgroundColor(PRIMARY)
           .onClick(() => {
             const holder = ResumeDataHolder.getInstance();
             holder.formData.name = this.name;
@@ -169,6 +207,6 @@ struct StepBasicInfo {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F8FAFC');
+    .backgroundColor(BG_PAGE);
   }
 }

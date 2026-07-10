@@ -6,6 +6,12 @@ import { socket, connection } from '@kit.NetworkKit';
 import { DEMO_PHOTO_URI, ResumeDataHolder, ResumeFormData, ResumePreviewData, ResumePreviewSection, ResumeTemplateType } from '../model/ResumeModels';
 import { requestScoreResume } from '../service/ResumeApiService';
 import { scoreResume } from '../service/ResumeService';
+import { PRIMARY, PRIMARY_DARK, PRIMARY_LIGHT, PRIMARY_BORDER, BG_PAGE, BORDER_DEFAULT } from '../style/Colors';
+
+interface HtmlSection {
+  title: string;
+  content: string;
+}
 
 @Entry
 @Component
@@ -292,58 +298,26 @@ struct StepPreview {
   }
 
   private async buildResumeHtml(): Promise<string> {
-    const d: ResumeFormData = this.holder.formData;
-    const accent: string = this.accentColor();
-    const initials: string = d.name.length > 0 ? d.name.substring(0, 1) : '?';
-    const photoHtml: string = await this.buildPhotoHtml(d.photoUri, initials);
-
-    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
-      '@page{size:A4;margin:0;}' +
-      '*{margin:0;padding:0;box-sizing:border-box;}' +
-      'body{font-family:PingFang SC,Microsoft YaHei,sans-serif;font-size:11pt;color:#333;line-height:1.6;}' +
-      '.layout{display:flex;min-height:297mm;}' +
-      '.sidebar{width:32%;background:' + accent + ';color:#fff;padding:28px 20px;}' +
-      '.sidebar h2{font-size:16pt;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.3);padding-bottom:8px;}' +
-      '.sidebar .item{margin-bottom:14px;font-size:9.5pt;line-height:1.5;}' +
-      '.sidebar .label{font-size:8.5pt;opacity:0.8;margin-bottom:2px;}' +
-      '.avatar{width:90px;height:90px;border-radius:50%;border:3px solid rgba(255,255,255,0.3);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;}' +
-      '.avatar img{width:100%;height:100%;object-fit:cover;}' +
-      '.avatar-text{font-size:32pt;font-weight:bold;color:#fff;}' +
-      '.main{width:68%;padding:28px 24px;}' +
-      '.main h1{font-size:22pt;color:' + accent + ';margin-bottom:2px;}' +
-      '.main h3{font-size:11pt;color:#555;font-weight:normal;margin-bottom:18px;}' +
-      '.section{margin-bottom:16px;}' +
-      '.s-title{font-size:12pt;font-weight:bold;color:' + accent + ';border-bottom:1.5px solid ' + accent + ';padding-bottom:3px;margin-bottom:8px;}' +
-      '.s-content{font-size:10pt;line-height:1.7;white-space:pre-wrap;}' +
-      '.skill-tag{display:inline-block;background:rgba(255,255,255,0.15);color:#fff;padding:3px 10px;border-radius:10px;margin:2px 4px 4px 0;font-size:9pt;}' +
-      '</style></head><body><div class="layout">' +
-      '<div class="sidebar">' +
-      photoHtml +
-      '<h2>个人信息</h2>' +
-      '<div class="item"><div class="label">电话</div>' + this.escapeHtml(d.phone) + '</div>' +
-      '<div class="item"><div class="label">邮箱</div>' + this.escapeHtml(d.email) + '</div>' +
-      '<div class="item"><div class="label">求职意向</div>' + this.escapeHtml(d.targetPosition) + '</div>' +
-      this.buildSidebarSkills(d.skills) +
-      '</div>' +
-      '<div class="main">' +
-      '<h1>' + this.escapeHtml(d.name) + '</h1>' +
-      '<h3>' + this.escapeHtml(d.targetPosition) + '</h3>' +
-      this.buildSection('教育背景', d.education) +
-      this.buildSection('工作经历', d.workExperience) +
-      this.buildSection('项目经验', d.projectExperience) +
-      this.buildSection('自我评价', d.selfEvaluation) +
-      '</div></div></body></html>';
+    switch (this.selectedTemplate) {
+      case ResumeTemplateType.STANDARD: return this.buildStandardHtml();
+      case ResumeTemplateType.TECHNICAL: return this.buildTechnicalHtml();
+      case ResumeTemplateType.CAMPUS: return this.buildCampusHtml();
+      case ResumeTemplateType.EXECUTIVE: return this.buildExecutiveHtml();
+      case ResumeTemplateType.MINIMAL: return this.buildMinimalHtml();
+      case ResumeTemplateType.BLACK_GOLD: return this.buildBlackGoldHtml();
+      default: return this.buildStandardHtml();
+    }
   }
 
-  private async buildPhotoHtml(photoUri: string, initials: string): Promise<string> {
+  private async buildPhotoHtml(photoUri: string, initials: string, size: number = 90, borderRadius: number = 50): Promise<string> {
     if (photoUri === DEMO_PHOTO_URI || photoUri.length === 0) {
-      return '<div class="avatar"><div class="avatar-text">' + this.escapeHtml(initials) + '</div></div>';
+      return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:' + borderRadius + 'px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#6366F1;"><span style="font-size:' + (size * 0.4) + 'pt;font-weight:bold;color:#fff;">' + this.escapeHtml(initials) + '</span></div>';
     }
     try {
       const dataUri: string = await this.readPhotoAsDataUri(photoUri);
-      return '<div class="avatar"><img src="' + dataUri + '"/></div>';
+      return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:' + borderRadius + 'px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #E0E7FF;"><img src="' + dataUri + '" style="width:100%;height:100%;object-fit:cover;"/></div>';
     } catch (_) {
-      return '<div class="avatar"><div class="avatar-text">' + this.escapeHtml(initials) + '</div></div>';
+      return '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:' + borderRadius + 'px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#6366F1;"><span style="font-size:' + (size * 0.4) + 'pt;font-weight:bold;color:#fff;">' + this.escapeHtml(initials) + '</span></div>';
     }
   }
 
@@ -374,32 +348,352 @@ struct StepPreview {
     return result;
   }
 
-  private buildSidebarSkills(skills: string): string {
+  private parseSkillTags(skills: string): string[] {
     const trimmed: string = skills.trim();
-    if (trimmed.length === 0) { return ''; }
-    let html: string = '<h2>专业技能</h2>';
-    const tags: string[] = trimmed.split(new RegExp('[,，、\\n]+'));
-    for (let i: number = 0; i < tags.length; i++) {
-      const tag: string = tags[i].trim();
-      if (tag.length > 0) {
-        html += '<span class="skill-tag">' + this.escapeHtml(tag) + '</span>';
-      }
-    }
-    return html;
+    if (trimmed.length === 0) { return []; }
+    return trimmed.split(new RegExp('[,，、\\n]+')).map((t: string) => t.trim()).filter((t: string): boolean => t.length > 0);
   }
 
-  private buildSection(title: string, content: string): string {
-    const c: string = content.trim();
-    if (c.length === 0) { return ''; }
-    return '<div class="section"><div class="s-title">' + this.escapeHtml(title) + '</div><div class="s-content">' + this.escapeHtml(c) + '</div></div>';
+  private async buildStandardHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+    const initials: string = d.name.length > 0 ? d.name.substring(0, 1) : '?';
+    const photoHtml: string = await this.buildPhotoHtml(d.photoUri, initials, 72, 6);
+    const tags: string[] = this.parseSkillTags(d.skills);
+
+    const rawSections: HtmlSection[] = [
+      {title: '教育背景', content: d.education.trim()},
+      {title: '工作经历', content: d.workExperience.trim()},
+      {title: '项目经验', content: d.projectExperience.trim()},
+    ];
+    const sections: HtmlSection[] = [];
+    for (let i: number = 0; i < rawSections.length; i++) {
+      if (rawSections[i].content.length > 0) { sections.push(rawSections[i]); }
+    }
+
+    let sectionHtml: string = '';
+    for (let i: number = 0; i < sections.length; i++) {
+      sectionHtml += '<div style="page-break-inside:avoid;margin-bottom:14px;">' +
+        '<div style="display:flex;align-items:center;margin-bottom:6px;">' +
+        '<div style="width:3px;height:18px;background:#0F766E;border-radius:2px;margin-right:8px;"></div>' +
+        '<span style="font-size:15px;font-weight:bold;color:#111827;">' + this.escapeHtml(sections[i].title) + '</span>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#1F2937;line-height:20px;white-space:pre-wrap;">' + this.escapeHtml(sections[i].content) + '</div>' +
+        '</div>';
+    }
+
+    let tagsHtml: string = '';
+    for (let i: number = 0; i < tags.length; i++) {
+      tagsHtml += '<span style="font-size:11px;font-weight:500;color:#0F766E;background:#CCFBF1;border:1px solid #C7D2FE;border-radius:12px;padding:5px 9px;margin-right:6px;margin-bottom:6px;">' + this.escapeHtml(tags[i]) + '</span>';
+    }
+
+    const summaryText: string = d.selfEvaluation.trim();
+    let summaryHtml: string = '';
+    if (summaryText.length > 0) {
+      summaryHtml = '<div style="margin-bottom:14px;"><div style="font-size:13px;color:#374151;line-height:20px;white-space:pre-wrap;">' + this.escapeHtml(summaryText) + '</div></div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#FFFFFF;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' +
+      '<div style="flex:1;">' +
+      '<div style="font-size:28px;font-weight:bold;color:#111827;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:14px;color:#374151;margin-top:2px;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:12px;color:#6B7280;margin-top:4px;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '</div>' +
+      photoHtml +
+      '</div>' +
+      '<hr style="border:none;border-top:1px solid #D1D5DB;margin-bottom:14px;"/>' +
+      summaryHtml +
+      sectionHtml +
+      (tags.length > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">' + tagsHtml + '</div>' : '') +
+      '</body></html>';
+  }
+
+  private async buildTechnicalHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+    const initials: string = d.name.length > 0 ? d.name.substring(0, 1) : '?';
+    const photoHtml: string = await this.buildPhotoHtml(d.photoUri, initials, 58, 8);
+    const tags: string[] = this.parseSkillTags(d.skills);
+
+    let tagsHtml: string = '';
+    for (let i: number = 0; i < tags.length; i++) {
+      tagsHtml += '<span style="display:inline-block;font-size:11px;color:#DBEAFE;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:5px 9px;margin-right:6px;margin-bottom:6px;">' + this.escapeHtml(tags[i]) + '</span>';
+    }
+
+    let sidebarHtml: string = '';
+    for (let i: number = 0; i < this.previewData.sidebarSections.length; i++) {
+      const s: ResumePreviewSection = this.previewData.sidebarSections[i];
+      sidebarHtml += '<div style="margin-bottom:10px;">' +
+        '<div style="font-size:12px;font-weight:bold;color:#BFDBFE;margin-bottom:3px;">' + this.escapeHtml(s.title) + '</div>' +
+        '<div style="font-size:11px;color:#93C5FD;line-height:16px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+        '</div>';
+    }
+
+    let mainHtml: string = '';
+    for (let i: number = 0; i < this.previewData.mainSections.length; i++) {
+      const s: ResumePreviewSection = this.previewData.mainSections[i];
+      mainHtml += '<div style="page-break-inside:avoid;background:#F8FAFF;border:1px solid #C7D2FE;border-radius:12px;padding:12px;margin-bottom:10px;">' +
+        '<div style="font-size:16px;font-weight:bold;color:#1E3A8A;margin-bottom:6px;">' + this.escapeHtml(s.title) + '</div>' +
+        '<div style="font-size:13px;color:#1F2937;line-height:20px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+        '</div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#FFF;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="background:#1E3A8A;padding:16px 24px;">' +
+      '<div style="font-size:24px;font-weight:bold;color:#FFF;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:14px;color:#BFDBFE;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:11px;color:#93C5FD;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '</div>' +
+      '<div style="display:flex;">' +
+      '<div style="width:35%;background:#1E3A8A;padding:16px;">' +
+      '<div style="text-align:center;">' + photoHtml + '</div>' +
+      '<hr style="border-color:rgba(255,255,255,0.2);margin:10px 0;">' +
+      '<div style="font-size:12px;font-weight:bold;color:#BFDBFE;margin-bottom:6px;">技能</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;">' + tagsHtml + '</div>' +
+      '<hr style="border-color:rgba(255,255,255,0.2);margin:10px 0;">' +
+      sidebarHtml +
+      '</div>' +
+      '<div style="flex:1;padding:16px;background:#FFF;">' +
+      '<div style="font-size:12px;color:#374151;line-height:18px;margin-bottom:12px;white-space:pre-wrap;">' + this.escapeHtml(this.previewData.summary) + '</div>' +
+      mainHtml +
+      '</div>' +
+      '</div>' +
+      '</body></html>';
+  }
+
+  private async buildCampusHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+    const initials: string = d.name.length > 0 ? d.name.substring(0, 1) : '?';
+    const photoHtml: string = await this.buildPhotoHtml(d.photoUri, initials, 64, 32);
+    const tags: string[] = this.parseSkillTags(d.skills);
+
+    let tagsHtml: string = '';
+    for (let i: number = 0; i < tags.length; i++) {
+      tagsHtml += '<span style="display:inline-block;font-size:11px;font-weight:500;color:#7C3AED;background:#EDE9FE;border:1px solid #C7D2FE;border-radius:12px;padding:5px 9px;margin-right:8px;margin-bottom:8px;">' + this.escapeHtml(tags[i]) + '</span>';
+    }
+
+    const mergedSections: ResumePreviewSection[] = [];
+    for (let i: number = 0; i < this.previewData.sidebarSections.length; i++) {
+      mergedSections.push(this.previewData.sidebarSections[i]);
+    }
+    for (let i: number = 0; i < this.previewData.mainSections.length; i++) {
+      mergedSections.push(this.previewData.mainSections[i]);
+    }
+
+    let timelineHtml: string = '';
+    for (let i: number = 0; i < mergedSections.length; i++) {
+      const s: ResumePreviewSection = mergedSections[i];
+      const isLast: boolean = i === mergedSections.length - 1;
+      timelineHtml += '<div class="timeline-item page-break" style="display:flex;">' +
+        '<div style="display:flex;flex-direction:column;align-items:center;width:16px;flex-shrink:0;">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:#7C3AED;flex-shrink:0;margin-top:4px;"></div>' +
+        (isLast ? '' : '<div style="margin-left:0;width:2px;flex-grow:1;background:#DDD6FE;"></div>') +
+        '</div>' +
+        '<div style="flex:1;padding:0 0 16px 12px;">' +
+        '<div style="font-size:14px;font-weight:bold;color:#7C3AED;margin-bottom:4px;">' + this.escapeHtml(s.title) + '</div>' +
+        '<div style="font-size:13px;color:#1F2937;line-height:19px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#FFF;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:14px;padding:14px;margin-bottom:14px;">' +
+      photoHtml +
+      '<div style="flex:1;">' +
+      '<div style="font-size:26px;font-weight:bold;color:#4C1D95;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:14px;color:#7C3AED;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:12px;color:#6B7280;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '</div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:#4B5563;line-height:18px;margin-bottom:14px;white-space:pre-wrap;">' + this.escapeHtml(this.previewData.summary) + '</div>' +
+      (tags.length > 0 ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">' + tagsHtml + '</div>' : '') +
+      timelineHtml +
+      '</body></html>';
+  }
+
+  private async buildExecutiveHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+
+    let gridHtml: string = '';
+    for (let i: number = 0; i < this.previewData.mainSections.length; i++) {
+      const s: ResumePreviewSection = this.previewData.mainSections[i];
+      gridHtml += '<div class="grid-item page-break" style="width:calc(50% - 5px);background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px;">' +
+        '<div style="font-size:13px;font-weight:bold;color:#92400E;margin-bottom:4px;">' + this.escapeHtml(s.title) + '</div>' +
+        '<div style="font-size:12px;color:#1F2937;line-height:19px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+        '</div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#FFF;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="text-align:center;">' +
+      '<div style="font-size:28px;font-weight:bold;color:#111827;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:13px;font-weight:500;color:#92400E;margin-top:2px;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:11px;color:#6B7280;margin-top:3px;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '</div>' +
+      '<hr style="border:none;border-top:2px solid #B45309;margin:14px 0;">' +
+      '<div style="font-size:13px;color:#374151;line-height:20px;margin-bottom:14px;white-space:pre-wrap;">' + this.escapeHtml(this.previewData.summary) + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:10px;">' +
+      gridHtml +
+      '</div>' +
+      '</body></html>';
+  }
+
+  private async buildMinimalHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+
+    const summaryText: string = d.selfEvaluation.trim();
+    let summaryHtml: string = '';
+    if (summaryText.length > 0) {
+      summaryHtml = '<div style="font-size:13px;color:#4B5563;line-height:20px;white-space:pre-wrap;margin-bottom:14px;">' + this.escapeHtml(summaryText) + '</div>';
+    }
+
+    const rawSections: HtmlSection[] = [
+      {title: '教育背景', content: d.education.trim()},
+      {title: '工作经历', content: d.workExperience.trim()},
+      {title: '项目经验', content: d.projectExperience.trim()},
+    ];
+    const sections: HtmlSection[] = [];
+    for (let i: number = 0; i < rawSections.length; i++) {
+      if (rawSections[i].content.length > 0) { sections.push(rawSections[i]); }
+    }
+
+    let sectionHtml: string = '';
+    for (let i: number = 0; i < sections.length; i++) {
+      sectionHtml += '<div style="page-break-inside:avoid;margin-bottom:12px;">' +
+        '<div style="font-size:13px;font-weight:bold;color:#374151;margin-bottom:3px;">' + this.escapeHtml(sections[i].title) + '</div>' +
+        '<div style="font-size:13px;color:#4B5563;line-height:20px;white-space:pre-wrap;">' + this.escapeHtml(sections[i].content) + '</div>' +
+        '</div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#FFFFFF;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="font-size:30px;font-weight:bold;color:#111827;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:14px;color:#4B5563;margin-top:2px;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:11px;color:#6B7280;margin-top:3px;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '<hr style="border:none;border-top:1px solid #E5E7EB;margin:14px 0;"/>' +
+      summaryHtml +
+      sectionHtml +
+      '</body></html>';
+  }
+
+  private async buildBlackGoldHtml(): Promise<string> {
+    const d: ResumeFormData = this.holder.formData;
+    const initials: string = d.name.length > 0 ? d.name.substring(0, 1) : '?';
+    const photoHtml: string = await this.buildPhotoHtml(d.photoUri, initials, 62, 31);
+    const tags: string[] = this.parseSkillTags(d.skills);
+
+    let tagsHtml: string = '';
+    for (let i: number = 0; i < tags.length; i++) {
+      tagsHtml += '<span style="display:inline-block;font-size:10px;color:#111827;background:#FCD34D;border-radius:10px;padding:4px 7px;margin-right:5px;margin-bottom:5px;">' + this.escapeHtml(tags[i]) + '</span>';
+    }
+
+    let sidebarHtml: string = '';
+    for (let i: number = 0; i < this.previewData.sidebarSections.length; i++) {
+      const s: ResumePreviewSection = this.previewData.sidebarSections[i];
+      if (s.title !== 'SKILLS') {
+        sidebarHtml += '<div style="margin-bottom:12px;">' +
+          '<div style="font-size:11px;font-weight:bold;color:#D4AF37;margin-bottom:3px;">' + this.escapeHtml(s.title) + '</div>' +
+          '<div style="font-size:10px;color:#D1D5DB;line-height:15px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+          '</div>';
+      }
+    }
+
+    let mainHtml: string = '';
+    for (let i: number = 0; i < this.previewData.mainSections.length; i++) {
+      const s: ResumePreviewSection = this.previewData.mainSections[i];
+      mainHtml += '<div class="page-break" style="margin-bottom:14px;">' +
+        '<div style="font-size:13px;font-weight:bold;color:#D4AF37;margin-bottom:3px;">' + this.escapeHtml(s.title) + '</div>' +
+        '<div style="font-size:12px;color:#D1D5DB;line-height:18px;white-space:pre-wrap;">' + this.escapeHtml(s.content) + '</div>' +
+        '</div>';
+    }
+
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><style>' +
+      '@page{size:A4;margin:0;}' +
+      '*{margin:0;padding:0;box-sizing:border-box;}' +
+      'body{font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;background:#1F2937;-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+      '</style></head><body>' +
+      '<div style="background:#111827;padding:14px 24px;">' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+      photoHtml +
+      '<div style="flex:1;">' +
+      '<div style="font-size:28px;font-weight:bold;color:#FFF;">' + this.escapeHtml(d.name) + '</div>' +
+      '<div style="font-size:13px;color:#FCD34D;">' + this.escapeHtml(d.targetPosition) + '</div>' +
+      '<div style="font-size:11px;color:#D1D5DB;">' + this.escapeHtml(d.phone) + ' | ' + this.escapeHtml(d.email) + '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<div style="display:flex;background:#1F2937;">' +
+      '<div style="width:35%;padding:16px;border-right:1px solid rgba(212,175,55,0.3);">' +
+      sidebarHtml +
+      '<div style="font-size:11px;font-weight:bold;color:#D4AF37;margin-top:12px;">SKILLS</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">' + tagsHtml + '</div>' +
+      '</div>' +
+      '<div style="flex:1;padding:16px;">' +
+      mainHtml +
+      '</div>' +
+      '</div>' +
+      '</body></html>';
   }
 
   @Builder stepIndicator(current: number) {
-    Row({ space: 8 }) {
-      ForEach([1, 2, 3, 4], (s: number) => {
-        Circle({ width: 10, height: 10 }).fill(s <= current ? '#2563EB' : '#D1D5DB');
+    Row({ space: 0 }) {
+      ForEach([1, 2, 3, 4], (step: number, index: number) => {
+        Row({ space: 0 }) {
+          Column({ space: 2 }) {
+            Column() {
+              if (step < current) {
+                Text('\u2713')
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFFFFF');
+              } else {
+                Text(`${step}`)
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(step === current ? '#FFFFFF' : '#9CA3AF');
+              }
+            }
+            .width(24)
+            .height(24)
+            .borderRadius(12)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(step <= current ? PRIMARY : '#E5E7EB');
+            Text(step === 1 ? '基本信息' : step === 2 ? '经历' : step === 3 ? '模板' : '预览')
+              .fontSize(9)
+              .fontColor(step <= current ? PRIMARY : '#9CA3AF');
+          }
+          .alignItems(HorizontalAlign.Center);
+
+          if (index < 3) {
+            Divider()
+              .width(24)
+              .height(1)
+              .color(step < current ? PRIMARY : '#E5E7EB')
+              .margin({ top: -8 });
+          }
+        }
       });
-    }.justifyContent(FlexAlign.Center).margin({ bottom: 20 });
+    }
+    .justifyContent(FlexAlign.Center)
+    .width('100%')
+    .padding({ top: 8, bottom: 8 });
   }
 
   @Builder photoBox(size: number, radius: number) {
@@ -407,11 +701,11 @@ struct StepPreview {
       if (this.isDemoPhoto(this.previewData.photoUri)) {
         Image($r('app.media.startIcon'))
           .width(size).height(size).borderRadius(radius).objectFit(ImageFit.Cover)
-          .border({ width: 2, color: '#E0E7FF' });
+          .border({ width: 2, color: BORDER_DEFAULT });
       } else {
         Image(this.previewData.photoUri)
           .width(size).height(size).borderRadius(radius).objectFit(ImageFit.Cover)
-          .border({ width: 2, color: '#E0E7FF' });
+          .border({ width: 2, color: BORDER_DEFAULT });
       }
     } else {
       Text(this.previewData.name.substring(0, 1))
@@ -434,7 +728,7 @@ struct StepPreview {
   @Builder skillTag(tag: string) {
     Text(tag).fontSize(11).fontColor(this.accentColor()).fontWeight(FontWeight.Medium)
       .padding({ left: 9, right: 9, top: 5, bottom: 5 }).margin({ right: 8, bottom: 8 })
-      .borderRadius(12).backgroundColor(this.softColor()).border({ width: 1, color: '#C7D2FE' });
+      .borderRadius(12).backgroundColor(this.softColor()).border({ width: 1, color: PRIMARY_BORDER });
   }
 
   @Builder standardResumePreview() {
@@ -455,64 +749,101 @@ struct StepPreview {
           (s: ResumePreviewSection) => s.title);
       }.width('100%');
     }.width('100%').padding(18).borderRadius(16).backgroundColor('#FFFFFF')
-     .border({ width: 1, color: '#A5B4FC' });
+     .border({ width: 1, color: '#CBD5E1' });
   }
 
   @Builder technicalResumePreview() {
     Column({ space: 0 }) {
-      Column({ space: 8 }) {
-        Row({ space: 12 }) {
-          this.photoBox(58, 8);
-          Column({ space: 4 }) {
-            Text(this.previewData.name).fontSize(24).fontWeight(FontWeight.Bold).fontColor('#FFFFFF');
-            Text(this.previewData.targetPosition).fontSize(14).fontColor('#BFDBFE');
-            Text(`${this.previewData.phone}  |  ${this.previewData.email}`).fontSize(11).fontColor('#93C5FD');
-          }.alignItems(HorizontalAlign.Start).layoutWeight(1);
-        }.width('100%');
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.previewData.skillTags, (t: string) => {
-            Text(t).fontSize(11).fontWeight(FontWeight.Medium).fontColor('#DBEAFE')
-              .padding({ left: 9, right: 9, top: 5, bottom: 5 }).margin({ right: 8, bottom: 8 })
-              .borderRadius(12).backgroundColor('rgba(255,255,255,0.15)')
-              .border({ width: 1, color: 'rgba(255,255,255,0.2)' });
-          });
-        }.width('100%');
-        Text(this.previewData.summary).fontSize(12).fontColor('#DBEAFE').lineHeight(18).width('100%');
+      Row() {
+        Column({ space: 4 }) {
+          Text(this.previewData.name).fontSize(24).fontWeight(FontWeight.Bold).fontColor('#FFFFFF');
+          Text(this.previewData.targetPosition).fontSize(14).fontColor('#BFDBFE');
+          Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`).fontSize(11).fontColor('#93C5FD');
+        }.alignItems(HorizontalAlign.Start).layoutWeight(1);
       }.width('100%').padding(16).backgroundColor('#1E3A8A');
-      Column({ space: 12 }) {
-        ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
-          Column({ space: 6 }) {
-            Text(s.title).fontSize(16).fontWeight(FontWeight.Bold).fontColor('#1E3A8A');
-            Text(s.content).fontSize(13).fontColor('#1F2937').lineHeight(20).width('100%');
-          }.alignItems(HorizontalAlign.Start).width('100%').padding(12).borderRadius(12)
-           .backgroundColor('#F8FAFF').border({ width: 1, color: '#C7D2FE' });
-        }, (s: ResumePreviewSection) => s.title);
-      }.width('100%').padding(16).backgroundColor('#FFFFFF');
-    }.width('100%').borderRadius(16).clip(true).border({ width: 1, color: '#A5B4FC' });
+
+      Row() {
+        Column({ space: 10 }) {
+          this.photoBox(58, 8);
+          Row().width('100%').height(1).backgroundColor('rgba(255,255,255,0.2)');
+          Text('技能').fontSize(12).fontWeight(FontWeight.Bold).fontColor('#BFDBFE');
+          Flex({ wrap: FlexWrap.Wrap }) {
+            ForEach(this.previewData.skillTags, (t: string) => {
+              Text(t).fontSize(11).fontColor('#DBEAFE')
+                .padding({ left: 9, right: 9, top: 5, bottom: 5 }).margin({ right: 6, bottom: 6 })
+                .borderRadius(12).backgroundColor('rgba(255,255,255,0.15)')
+                .border({ width: 1, color: 'rgba(255,255,255,0.2)' });
+            }, (t: string) => t);
+          }.width('100%');
+          Row().width('100%').height(1).backgroundColor('rgba(255,255,255,0.2)');
+          ForEach(this.previewData.sidebarSections, (s: ResumePreviewSection) => {
+            Column({ space: 3 }) {
+              Text(s.title).fontSize(12).fontWeight(FontWeight.Bold).fontColor('#BFDBFE');
+              Text(s.content).fontSize(11).fontColor('#93C5FD').lineHeight(16).width('100%');
+            }.alignItems(HorizontalAlign.Start).width('100%');
+          }, (s: ResumePreviewSection) => s.title);
+        }.alignItems(HorizontalAlign.Start).width('35%').padding(12).backgroundColor('#1E3A8A');
+
+        Column({ space: 12 }) {
+          Text(this.previewData.summary).fontSize(12).fontColor('#374151').lineHeight(18).width('100%');
+          ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
+            Column({ space: 6 }) {
+              Text(s.title).fontSize(16).fontWeight(FontWeight.Bold).fontColor('#1E3A8A');
+              Text(s.content).fontSize(13).fontColor('#1F2937').lineHeight(20).width('100%');
+            }.alignItems(HorizontalAlign.Start).width('100%').padding(12).borderRadius(12)
+             .backgroundColor('#F8FAFF').border({ width: 1, color: '#C7D2FE' });
+          }, (s: ResumePreviewSection) => s.title);
+        }.layoutWeight(1).padding(14).backgroundColor('#FFFFFF');
+      }.width('100%');
+    }.width('100%').borderRadius(16).clip(true).border({ width: 1, color: '#A5B4FC' })
+     .backgroundColor('#FFFFFF');
+  }
+
+  private getMergedCampusSections(): ResumePreviewSection[] {
+    const allSections: ResumePreviewSection[] = [];
+    for (let i: number = 0; i < this.previewData.sidebarSections.length; i++) {
+      allSections.push(this.previewData.sidebarSections[i]);
+    }
+    for (let i: number = 0; i < this.previewData.mainSections.length; i++) {
+      allSections.push(this.previewData.mainSections[i]);
+    }
+    return allSections;
   }
 
   @Builder campusResumePreview() {
-    Column({ space: 14 }) {
+    Column({ space: 12 }) {
       Row({ space: 12 }) {
         this.photoBox(64, 32);
         Column({ space: 6 }) {
           Text(this.previewData.name).fontSize(26).fontWeight(FontWeight.Bold).fontColor('#4C1D95');
           Text(this.previewData.targetPosition).fontSize(14).fontColor('#7C3AED');
-          Text(`${this.previewData.phone}  |  ${this.previewData.email}`).fontSize(12).fontColor('#6B7280');
+          Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`).fontSize(12).fontColor('#6B7280');
         }.alignItems(HorizontalAlign.Start).layoutWeight(1);
-      }.width('100%');
+      }.width('100%').padding(14).borderRadius(14)
+       .backgroundColor('#F5F3FF').border({ width: 1, color: '#DDD6FE' });
+
       Text(this.previewData.summary).fontSize(12).fontColor('#4B5563').lineHeight(18).width('100%');
+
       Flex({ wrap: FlexWrap.Wrap }) {
         ForEach(this.previewData.skillTags, (t: string) => { this.skillTag(t); });
       }.width('100%');
-      Column({ space: 12 }) {
-        ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
-          Column({ space: 5 }) {
-            Text(s.title).fontSize(14).fontWeight(FontWeight.Bold).fontColor('#7C3AED');
-            Text(s.content).fontSize(13).fontColor('#1F2937').lineHeight(19).width('100%');
-          }.alignItems(HorizontalAlign.Start).width('100%').padding(12).borderRadius(12)
-           .backgroundColor('#F5F3FF').border({ width: 1, color: '#DDD6FE' });
-        }, (s: ResumePreviewSection) => s.title);
+
+      Column({ space: 0 }) {
+        ForEach(this.getMergedCampusSections(), (s: ResumePreviewSection, idx: number) => {
+          Row({ space: 8 }) {
+            Column() {
+              Circle().width(8).height(8).fill('#7C3AED');
+              if (idx < this.getMergedCampusSections().length - 1) {
+                Column().width(2).height(40).backgroundColor('#DDD6FE');
+              }
+            }.alignItems(HorizontalAlign.Center).width(20);
+
+            Column({ space: 5 }) {
+              Text(s.title).fontSize(14).fontWeight(FontWeight.Bold).fontColor('#7C3AED');
+              Text(s.content).fontSize(13).fontColor('#1F2937').lineHeight(19).width('100%');
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1).padding({ bottom: 16 });
+          }.width('100%').alignItems(VerticalAlign.Top);
+        }, (s: ResumePreviewSection, idx: number) => `${idx}_${s.title}`);
       }.width('100%');
     }.width('100%').padding(18).borderRadius(16).backgroundColor('#FFFFFF')
      .border({ width: 1, color: '#DDD6FE' });
@@ -520,24 +851,26 @@ struct StepPreview {
 
   @Builder executiveResumePreview() {
     Column({ space: 14 }) {
-      Row({ space: 12 }) {
-        Column({ space: 4 }) {
-          Text(this.previewData.name).fontSize(28).fontWeight(FontWeight.Bold).fontColor('#111827');
-          Text(this.previewData.targetPosition).fontSize(13).fontColor('#92400E').fontWeight(FontWeight.Medium);
-          Text(`${this.previewData.phone}  |  ${this.previewData.email}`).fontSize(11).fontColor('#6B7280');
-        }.alignItems(HorizontalAlign.Start).layoutWeight(1);
-        this.photoBox(68, 10);
+      Column({ space: 4 }) {
+        Text(this.previewData.name).fontSize(28).fontWeight(FontWeight.Bold).fontColor('#111827');
+        Text(this.previewData.targetPosition).fontSize(13).fontColor('#92400E').fontWeight(FontWeight.Medium);
+        Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`).fontSize(11).fontColor('#6B7280');
+      }.alignItems(HorizontalAlign.Center).width('100%');
+
+      Row().height(2).width('100%').backgroundColor('#B45309').borderRadius(2);
+
+      Text(this.previewData.summary).fontSize(13).fontColor('#374151').lineHeight(20).width('100%');
+
+      Flex({ wrap: FlexWrap.Wrap }) {
+        ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
+          Column({ space: 5 }) {
+            Text(s.title).fontSize(13).fontWeight(FontWeight.Bold).fontColor('#92400E');
+            Text(s.content).fontSize(12).fontColor('#1F2937').lineHeight(19).width('100%');
+          }.alignItems(HorizontalAlign.Start).width('48%').padding(10).borderRadius(12)
+           .backgroundColor('#FFFBEB').border({ width: 1, color: '#FDE68A' })
+           .margin({ right: '2%', bottom: 10 });
+        }, (s: ResumePreviewSection) => s.title);
       }.width('100%');
-      Row().height(1).width('100%').backgroundColor('#D4AF37');
-      Text(this.previewData.summary).fontSize(13).fontColor('#374151').lineHeight(20).width('100%')
-        .padding({ top: 4, bottom: 4 });
-      ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
-        Column({ space: 6 }) {
-          Text(s.title).fontSize(13).fontWeight(FontWeight.Bold).fontColor('#92400E');
-          Text(s.content).fontSize(12).fontColor('#1F2937').lineHeight(19).width('100%');
-        }.alignItems(HorizontalAlign.Start).width('100%').padding(12).borderRadius(12)
-         .backgroundColor('#FFFBEB').border({ width: 1, color: '#FDE68A' });
-      }, (s: ResumePreviewSection) => s.title);
     }.width('100%').padding(18).borderRadius(16).backgroundColor('#FFFFFF')
      .border({ width: 1, color: '#D4AF37' });
   }
@@ -549,10 +882,10 @@ struct StepPreview {
         Text(this.previewData.targetPosition).fontSize(14).fontColor('#4B5563');
         Text(`${this.previewData.phone}  |  ${this.previewData.email}`).fontSize(11).fontColor('#6B7280');
       }.alignItems(HorizontalAlign.Start).width('100%');
-      Row().height(1).width('100%').backgroundColor('#E5E7EB');
+      Divider().strokeWidth(1).color('#E5E7EB');
       Text(this.previewData.summary).fontSize(13).fontColor('#4B5563').lineHeight(20).width('100%');
       ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
-        Column({ space: 5 }) {
+        Column({ space: 6 }) {
           Text(s.title).fontSize(13).fontWeight(FontWeight.Bold).fontColor('#374151');
           Text(s.content).fontSize(13).fontColor('#4B5563').lineHeight(20).width('100%');
         }.alignItems(HorizontalAlign.Start).width('100%');
@@ -562,32 +895,50 @@ struct StepPreview {
   }
 
   @Builder blackGoldResumePreview() {
-    Column({ space: 14 }) {
-      Column({ space: 4 }) {
+    Column({ space: 0 }) {
+      Column({ space: 0 }) {
         Row({ space: 12 }) {
+          this.photoBox(62, 31);
           Column({ space: 4 }) {
-            Text(this.previewData.name).fontSize(28).fontWeight(FontWeight.Bold).fontColor('#FFFFFF');
+            Text(this.previewData.name).fontSize(28).fontWeight(FontWeight.Bold).fontColor('#F9FAFB');
             Text(this.previewData.targetPosition).fontSize(13).fontColor('#FCD34D');
-            Text(`${this.previewData.phone}  |  ${this.previewData.email}`).fontSize(11).fontColor('#D1D5DB');
+            Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`).fontSize(11).fontColor('#D1D5DB');
           }.alignItems(HorizontalAlign.Start).layoutWeight(1);
         }.width('100%');
-      }.width('100%').padding(16).backgroundColor('#111827');
-      Column({ space: 12 }) {
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.previewData.skillTags, (t: string) => {
-            Text(t).fontSize(11).fontWeight(FontWeight.Medium).fontColor('#111827')
-              .padding({ left: 9, right: 9, top: 5, bottom: 5 }).margin({ right: 8, bottom: 8 })
-              .borderRadius(12).backgroundColor('#FCD34D');
-          });
-        }.width('100%');
-        Text(this.previewData.summary).fontSize(12).fontColor('#D1D5DB').lineHeight(18).width('100%');
-        ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
-          Column({ space: 5 }) {
-            Text(s.title).fontSize(14).fontWeight(FontWeight.Bold).fontColor('#D4AF37');
-            Text(s.content).fontSize(12).fontColor('#D1D5DB').lineHeight(18).width('100%');
-          }.alignItems(HorizontalAlign.Start).width('100%');
-        }, (s: ResumePreviewSection) => s.title);
-      }.width('100%').padding(16).backgroundColor('#1F2937');
+      }.width('100%').padding(14).backgroundColor('#111827');
+
+      Row() {
+        Column({ space: 12 }) {
+          ForEach(this.previewData.sidebarSections, (s: ResumePreviewSection) => {
+            if (s.title !== 'SKILLS') {
+              Column({ space: 3 }) {
+                Text(s.title).fontSize(11).fontWeight(FontWeight.Bold).fontColor('#D4AF37');
+                Text(s.content).fontSize(10).fontColor('#D1D5DB').lineHeight(15).width('100%');
+              }.alignItems(HorizontalAlign.Start).width('100%');
+            }
+          }, (s: ResumePreviewSection) => s.title);
+
+          Text('SKILLS').fontSize(11).fontWeight(FontWeight.Bold).fontColor('#D4AF37');
+          Flex({ wrap: FlexWrap.Wrap }) {
+            ForEach(this.previewData.skillTags, (t: string) => {
+              Text(t).fontSize(10).fontColor('#111827')
+                .padding({ left: 7, right: 7, top: 4, bottom: 4 }).margin({ right: 5, bottom: 5 })
+                .borderRadius(10).backgroundColor('#FCD34D');
+            }, (t: string) => t);
+          }.width('100%');
+        }.alignItems(HorizontalAlign.Start).width('35%').padding(14);
+
+        Column().width(1).backgroundColor('rgba(212,175,55,0.3)');
+
+        Column({ space: 12 }) {
+          ForEach(this.previewData.mainSections, (s: ResumePreviewSection) => {
+            Column({ space: 4 }) {
+              Text(s.title).fontSize(13).fontWeight(FontWeight.Bold).fontColor('#D4AF37');
+              Text(s.content).fontSize(12).fontColor('#D1D5DB').lineHeight(18).width('100%');
+            }.alignItems(HorizontalAlign.Start).width('100%');
+          }, (s: ResumePreviewSection) => s.title);
+        }.layoutWeight(1).padding(14);
+      }.width('100%').backgroundColor('#1F2937');
     }.width('100%').borderRadius(16).clip(true).border({ width: 1, color: '#D4AF37' });
   }
 
@@ -604,18 +955,18 @@ struct StepPreview {
     Column({ space: 12 }) {
       Row() {
         Column({ space: 4 }) {
-          Text('简历评分').fontSize(18).fontWeight(FontWeight.Bold).fontColor('#064E3B');
-          Text(this.scoreLevel).fontSize(13).fontColor('#047857');
+          Text('简历评分').fontSize(18).fontWeight(FontWeight.Bold).fontColor(PRIMARY_DARK);
+          Text(this.scoreLevel).fontSize(13).fontColor(PRIMARY);
         }.alignItems(HorizontalAlign.Start).layoutWeight(1);
-        Text(`${this.scoreValue}`).fontSize(36).fontWeight(FontWeight.Bold).fontColor('#059669');
+        Text(`${this.scoreValue}`).fontSize(36).fontWeight(FontWeight.Bold).fontColor(PRIMARY);
       }.width('100%');
       Progress({ value: this.scoreValue, total: 100, type: ProgressType.Linear })
-        .width('100%').color('#16A34A').backgroundColor('#E5E7EB');
+        .width('100%').color(PRIMARY).backgroundColor('#E5E7EB');
       ForEach(this.suggestions, (s: string) => {
-        Text(`• ${s}`).fontSize(13).fontColor('#374151').lineHeight(20).width('100%');
+        Text(`\u2022 ${s}`).fontSize(13).fontColor('#374151').lineHeight(20).width('100%');
       });
-    }.width('100%').padding(16).borderRadius(14).backgroundColor('#ECFDF3')
-     .border({ width: 1, color: '#A7F3D0' });
+    }.width('100%').padding(16).borderRadius(14).backgroundColor(PRIMARY_LIGHT)
+     .border({ width: 1, color: PRIMARY_BORDER });
   }
 
   build() {
@@ -639,16 +990,16 @@ struct StepPreview {
                   .width('100%').textAlign(TextAlign.Center).padding(20);
               }
             }.width('100%').padding(16).borderRadius(16).backgroundColor('#FFFFFF')
-             .border({ width: 1, color: '#DDE7FF' });
+             .border({ width: 1, color: BORDER_DEFAULT });
 
             Column({ space: 10 }) {
               Text('在线编辑').fontSize(16).fontWeight(FontWeight.Bold).fontColor('#111827').width('100%');
               TextArea({ text: this.editedResume, placeholder: '纯文本简历，方便复制修改' })
                 .fontSize(14).fontColor('#111827').width('100%').height(140).borderRadius(12)
-                .backgroundColor('#F8FAFF').padding(12).border({ width: 1, color: '#DDE7FF' })
+                .backgroundColor(PRIMARY_LIGHT).padding(12).border({ width: 1, color: BORDER_DEFAULT })
                 .onChange((v: string) => { this.editedResume = v; this.exportStatus = ''; });
             }.width('100%').padding(16).borderRadius(16).backgroundColor('#FFFFFF')
-             .border({ width: 1, color: '#DDE7FF' });
+             .border({ width: 1, color: BORDER_DEFAULT });
 
             if (this.scoreValue > 0) { this.scorePanel(); }
 
@@ -674,11 +1025,11 @@ struct StepPreview {
 
             Row({ space: 10 }) {
               Button(this.isScoring ? '评分中...' : '更新评分')
-                .height(42).fontSize(14).fontColor('#3730A3').backgroundColor('#E0E7FF')
+                .height(42).fontSize(14).fontColor(PRIMARY_DARK).backgroundColor(PRIMARY_LIGHT)
                 .layoutWeight(1).borderRadius(12)
                 .enabled(!this.isScoring).onClick(() => { this.refreshScore(); });
               Button(this.isExporting ? '生成中...' : '导出 PDF')
-                .height(42).fontSize(14).fontColor('#FFFFFF').backgroundColor('#059669')
+                .height(42).fontSize(14).fontColor('#FFFFFF').backgroundColor(PRIMARY)
                 .layoutWeight(1).borderRadius(12)
                 .enabled(!this.isExporting).onClick(() => { this.exportPdf(); });
             }.width('100%');
@@ -686,13 +1037,13 @@ struct StepPreview {
             if (this.lastPdfPath.length > 0) {
               Row({ space: 10 }) {
                 Button(this.isSavingPdf ? '保存中...' : '保存到本地')
-                  .height(42).fontSize(14).fontColor('#1D4ED8').backgroundColor('#DBEAFE')
+                  .height(42).fontSize(14).fontColor(PRIMARY).backgroundColor(PRIMARY_LIGHT)
                   .layoutWeight(1).borderRadius(12)
                   .enabled(!this.isSavingPdf).onClick(() => { this.savePdfToPublicDir(); });
                 Button(this.serverRunning ? '停止服务' : '发送到PC')
                   .height(42).fontSize(14)
-                  .fontColor(this.serverRunning ? '#DC2626' : '#7C3AED')
-                  .backgroundColor(this.serverRunning ? '#FEE2E2' : '#EDE9FE')
+                  .fontColor(this.serverRunning ? '#DC2626' : PRIMARY)
+                  .backgroundColor(this.serverRunning ? '#FEE2E2' : PRIMARY_LIGHT)
                   .layoutWeight(1).borderRadius(12)
                   .onClick(() => {
                     if (this.serverRunning) { this.stopHttpServer(); }
@@ -704,11 +1055,11 @@ struct StepPreview {
         }.layoutWeight(1);
 
         Row({ space: 12 }) {
-          Button('← 上一步').fontSize(15).fontColor('#6B7280').layoutWeight(1).height(48)
+          Button('\u2190 上一步').fontSize(15).fontColor('#6B7280').layoutWeight(1).height(48)
             .borderRadius(12).backgroundColor('#F3F4F6')
             .onClick(() => { router.back(); });
           Button('返回首页').fontSize(15).fontWeight(FontWeight.Medium).fontColor('#FFFFFF')
-            .layoutWeight(1).height(48).borderRadius(12).backgroundColor('#2563EB')
+            .layoutWeight(1).height(48).borderRadius(12).backgroundColor(PRIMARY)
             .onClick(() => { this.holder.reset(); router.clear(); router.pushUrl({ url: 'pages/HomePage' }); });
         }.width('100%').padding(16).backgroundColor('#FFFFFF');
       }
@@ -736,6 +1087,6 @@ struct StepPreview {
         .width('100%').height('100%');
       }
     }
-    .width('100%').height('100%').backgroundColor('#F8FAFC');
+    .width('100%').height('100%').backgroundColor(BG_PAGE);
   }
 }

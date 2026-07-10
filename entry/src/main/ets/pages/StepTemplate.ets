@@ -10,6 +10,7 @@ import {
   GenerateResumeApiResponse
 } from '../service/ResumeApiService';
 import { generateResumePreview, generateResumeText } from '../service/ResumeService';
+import { PRIMARY, PRIMARY_LIGHT, BG_PAGE, BORDER_DEFAULT, PRIMARY_BORDER } from '../style/Colors';
 
 @Entry
 @Component
@@ -18,37 +19,90 @@ struct StepTemplate {
   @State isGenerating: boolean = false;
   @State errorMessage: string = '';
 
+  private getTemplateColor(type: ResumeTemplateType): string {
+    if (type === ResumeTemplateType.STANDARD) { return '#0F766E'; }
+    if (type === ResumeTemplateType.TECHNICAL) { return '#1E3A8A'; }
+    if (type === ResumeTemplateType.CAMPUS) { return '#7C3AED'; }
+    if (type === ResumeTemplateType.EXECUTIVE) { return '#B45309'; }
+    if (type === ResumeTemplateType.MINIMAL) { return '#6B7280'; }
+    if (type === ResumeTemplateType.BLACK_GOLD) { return '#111827'; }
+    return '#0F766E';
+  }
+
   @Builder
   private stepIndicator(current: number) {
-    Row({ space: 8 }) {
-      ForEach([1, 2, 3, 4], (step: number) => {
-        Circle({ width: 10, height: 10 })
-          .fill(step <= current ? '#2563EB' : '#D1D5DB');
+    Row({ space: 0 }) {
+      ForEach([1, 2, 3, 4], (step: number, index: number) => {
+        Row({ space: 0 }) {
+          Column({ space: 2 }) {
+            Column() {
+              if (step < current) {
+                Text('\u2713')
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFFFFF');
+              } else {
+                Text(`${step}`)
+                  .fontSize(12)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(step === current ? '#FFFFFF' : '#9CA3AF');
+              }
+            }
+            .width(24)
+            .height(24)
+            .borderRadius(12)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(step <= current ? PRIMARY : '#E5E7EB');
+            Text(step === 1 ? '基本信息' : step === 2 ? '经历' : step === 3 ? '模板' : '预览')
+              .fontSize(9)
+              .fontColor(step <= current ? PRIMARY : '#9CA3AF');
+          }
+          .alignItems(HorizontalAlign.Center);
+
+          if (index < 3) {
+            Divider()
+              .width(24)
+              .height(1)
+              .color(step < current ? PRIMARY : '#E5E7EB')
+              .margin({ top: -8 });
+          }
+        }
       });
     }
     .justifyContent(FlexAlign.Center)
-    .margin({ bottom: 24 });
+    .width('100%')
+    .padding({ top: 8, bottom: 8 });
   }
 
   @Builder
   private templateCard(option: TemplateOption) {
-    Column({ space: 8 }) {
-      Text(option.title)
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.selectedTemplate === option.templateType ? '#FFFFFF' : '#111827');
-      Text(option.description)
-        .fontSize(12)
-        .fontColor(this.selectedTemplate === option.templateType ? '#DBEAFE' : '#6B7280')
-        .textAlign(TextAlign.Center);
+    Column({ space: 0 }) {
+      // 颜色预览块
+      Row()
+        .width('100%')
+        .height(40)
+        .borderRadius({ topLeft: 12, topRight: 12 })
+        .backgroundColor(this.getTemplateColor(option.templateType));
+
+      // 信息区
+      Column({ space: 4 }) {
+        Text(option.title)
+          .fontSize(14)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#111827');
+        Text(option.description)
+          .fontSize(11)
+          .fontColor('#6B7280')
+          .textAlign(TextAlign.Center);
+      }
+      .padding(10);
     }
-    .width('100%')
-    .padding(14)
+    .width('48%')
     .borderRadius(12)
-    .backgroundColor(this.selectedTemplate === option.templateType ? '#2563EB' : '#F9FAFB')
+    .backgroundColor(this.selectedTemplate === option.templateType ? PRIMARY_LIGHT : '#FFFFFF')
     .border({
       width: this.selectedTemplate === option.templateType ? 2 : 1,
-      color: this.selectedTemplate === option.templateType ? '#2563EB' : '#E5E7EB'
+      color: this.selectedTemplate === option.templateType ? PRIMARY : BORDER_DEFAULT
     })
     .onClick(() => {
       this.selectedTemplate = option.templateType;
@@ -76,15 +130,18 @@ struct StepTemplate {
           .margin({ bottom: 8 });
 
           Column({ space: 10 }) {
-            ForEach(TEMPLATE_OPTIONS, (option: TemplateOption) => {
-              this.templateCard(option);
-            });
+            Flex({ wrap: FlexWrap.Wrap }) {
+              ForEach(TEMPLATE_OPTIONS, (option: TemplateOption) => {
+                this.templateCard(option);
+              });
+            }
+            .width('100%');
           }
           .width('100%')
           .padding(16)
           .borderRadius(16)
           .backgroundColor('#FFFFFF')
-          .border({ width: 1, color: '#DDE7FF' });
+          .border({ width: 1, color: BORDER_DEFAULT });
 
           if (this.errorMessage) {
             Text(this.errorMessage)
@@ -101,7 +158,7 @@ struct StepTemplate {
       .layoutWeight(1);
 
       Row({ space: 12 }) {
-        Button('← 上一步')
+        Button('\u2190 上一步')
           .fontSize(15)
           .fontColor('#6B7280')
           .layoutWeight(1)
@@ -113,14 +170,14 @@ struct StepTemplate {
             router.back();
           });
 
-        Button(this.isGenerating ? '生成中...' : '生成简历 →')
+        Button(this.isGenerating ? '生成中...' : '生成简历 \u2192')
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
           .fontColor('#FFFFFF')
           .layoutWeight(1)
           .height(48)
           .borderRadius(12)
-          .backgroundColor(this.isGenerating ? '#93C5FD' : '#2563EB')
+          .backgroundColor(this.isGenerating ? '#A5B4FC' : PRIMARY)
           .enabled(!this.isGenerating)
           .onClick(async () => {
             const holder = ResumeDataHolder.getInstance();
@@ -155,6 +212,6 @@ struct StepTemplate {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F8FAFC');
+    .backgroundColor(BG_PAGE);
   }
 }

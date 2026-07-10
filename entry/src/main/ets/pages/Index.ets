@@ -4,6 +4,7 @@ import { ButtonFeedbackState, getButtonFeedbackScale } from '../model/ButtonFeed
 import { DEMO_PHOTO_URI, ResumeFormData, ResumePreviewData, ResumePreviewSection, ResumeScoreResult, ResumeTemplateType, TemplateOption, createDemoResumeForm, createEmptyResumePreview } from '../model/ResumeModels';
 import { GenerateResumeApiResponse, PdfExportResult, requestExportPdf, requestGenerateResume, requestScoreResume } from '../service/ResumeApiService';
 import { generateResumePreview, generateResumeText, scoreResume } from '../service/ResumeService';
+import { PRIMARY, PRIMARY_DARK, PRIMARY_LIGHT, PRIMARY_BORDER, BG_PAGE, BORDER_DEFAULT } from '../style/Colors';
 
 @Entry
 @Component
@@ -250,7 +251,7 @@ struct Index {
     this.apiErrorMessage = '';
     try {
       const result: PdfExportResult = await requestExportPdf(this.createFormData(), this.selectedTemplate, resumeText);
-      this.exportStatus = `PDF 已由后端生成：${result.fileName}，大小 ${result.byteLength} 字节。`;
+      this.exportStatus = `PDF 已由后端生成：${result.fileName}，大小 ${result.data.byteLength} 字节。`;
     } catch (error) {
       this.exportStatus = 'PDF 导出失败，请确认 Python 后端已启动。';
     } finally {
@@ -305,7 +306,7 @@ struct Index {
     .padding({ left: 12, right: 12, top: 10, bottom: 10 })
     .borderRadius(12)
     .backgroundColor(backgroundColor)
-    .border({ width: 1, color: '#E0E7FF' })
+    .border({ width: 1, color: BORDER_DEFAULT })
   }
 
   @Builder
@@ -313,11 +314,11 @@ struct Index {
     Text(label)
       .fontSize(12)
       .fontWeight(FontWeight.Medium)
-      .fontColor('#3730A3')
+      .fontColor(PRIMARY_DARK)
       .padding({ left: 10, right: 10, top: 5, bottom: 5 })
       .borderRadius(14)
-      .backgroundColor('#EEF2FF')
-      .border({ width: 1, color: '#C7D2FE' })
+      .backgroundColor(PRIMARY_LIGHT)
+      .border({ width: 1, color: PRIMARY_BORDER })
   }
 
   @Builder
@@ -332,7 +333,7 @@ struct Index {
           .width(42)
           .height(42)
           .borderRadius(14)
-          .backgroundColor('#4F46E5')
+          .backgroundColor(PRIMARY)
         Column({ space: 4 }) {
           Text('智能简历生成系统')
             .fontSize(30)
@@ -359,7 +360,7 @@ struct Index {
 
       Row({ space: 10 }) {
         this.heroMetric('核心流程', '6 步', '#2563EB', '#EFF6FF')
-        this.heroMetric('简历模板', '3 套', '#7C3AED', '#F5F3FF')
+        this.heroMetric('简历模板', '6 套', PRIMARY, PRIMARY_LIGHT)
         this.heroMetric('状态反馈', '完整', '#059669', '#ECFDF3')
       }
       .width('100%')
@@ -368,7 +369,8 @@ struct Index {
     .padding(18)
     .borderRadius(18)
     .backgroundColor('#FFFFFF')
-    .border({ width: 1, color: '#C7D2FE' })
+    .border({ width: 1, color: PRIMARY_BORDER })
+    .shadow({ radius: 12, color: 'rgba(0,0,0,0.07)', offsetY: 4 })
   }
 
   @Builder
@@ -380,7 +382,7 @@ struct Index {
         .fontColor('#111827')
       Text(caption)
         .fontSize(13)
-        .fontColor('#5B6475')
+        .fontColor('#6B7280')
     }
     .alignItems(HorizontalAlign.Start)
     .width('100%')
@@ -410,9 +412,9 @@ struct Index {
         .height(44)
         .fontSize(15)
         .fontColor('#111827')
-        .backgroundColor('#F8FAFF')
-        .borderRadius(10)
-        .border({ width: 1, color: '#DDE7FF' })
+        .backgroundColor(PRIMARY_LIGHT)
+        .borderRadius(12)
+        .border({ width: 1, color: BORDER_DEFAULT })
         .onChange(onValueChange)
     }
     .width('100%')
@@ -426,9 +428,9 @@ struct Index {
         .height(96)
         .fontSize(15)
         .fontColor('#111827')
-        .backgroundColor('#F8FAFF')
-        .borderRadius(10)
-        .border({ width: 1, color: '#DDE7FF' })
+        .backgroundColor(PRIMARY_LIGHT)
+        .borderRadius(12)
+        .border({ width: 1, color: BORDER_DEFAULT })
         .onChange(onValueChange)
     }
     .width('100%')
@@ -440,15 +442,15 @@ struct Index {
       ForEach(TEMPLATE_OPTIONS, (item: TemplateOption) => {
         Button() {
           Row({ space: 10 }) {
-            Text(this.selectedTemplate === item.templateType ? '✓' : '○')
+            Text(this.selectedTemplate === item.templateType ? '\u2713' : '\u25CB')
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.selectedTemplate === item.templateType ? '#FFFFFF' : '#4F46E5')
+              .fontColor(this.selectedTemplate === item.templateType ? '#FFFFFF' : PRIMARY)
               .textAlign(TextAlign.Center)
               .width(26)
               .height(26)
               .borderRadius(13)
-              .backgroundColor(this.selectedTemplate === item.templateType ? '#7C3AED' : '#EEF2FF')
+              .backgroundColor(this.selectedTemplate === item.templateType ? PRIMARY : PRIMARY_LIGHT)
             Column({ space: 4 }) {
               Text(item.title)
                 .fontSize(15)
@@ -463,18 +465,18 @@ struct Index {
             Text(this.selectedTemplate === item.templateType ? '已选' : '选择')
               .fontSize(12)
               .fontWeight(FontWeight.Medium)
-              .fontColor(this.selectedTemplate === item.templateType ? '#FFFFFF' : '#4F46E5')
+              .fontColor(this.selectedTemplate === item.templateType ? '#FFFFFF' : PRIMARY)
               .padding({ left: 9, right: 9, top: 4, bottom: 4 })
               .borderRadius(12)
-              .backgroundColor(this.selectedTemplate === item.templateType ? '#6366F1' : '#EEF2FF')
+              .backgroundColor(this.selectedTemplate === item.templateType ? PRIMARY : PRIMARY_LIGHT)
           }
           .width('100%')
         }
         .height(76)
         .padding({ left: 14, right: 14 })
         .borderRadius(14)
-        .backgroundColor(this.selectedTemplate === item.templateType ? '#312E81' : '#F8FAFF')
-        .border({ width: 1, color: this.selectedTemplate === item.templateType ? '#A5B4FC' : '#DDE7FF' })
+        .backgroundColor(this.selectedTemplate === item.templateType ? PRIMARY_DARK : '#F8FAFF')
+        .border({ width: 1, color: this.selectedTemplate === item.templateType ? PRIMARY_BORDER : BORDER_DEFAULT })
         .scale({
           x: this.getInteractiveButtonScale(this.getTemplateButtonKey(item.templateType)),
           y: this.getInteractiveButtonScale(this.getTemplateButtonKey(item.templateType))
@@ -503,27 +505,27 @@ struct Index {
           Text('简历评分')
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#064E3B')
+            .fontColor(PRIMARY_DARK)
           Text(this.scoreLevel)
             .fontSize(13)
-            .fontColor('#047857')
+            .fontColor(PRIMARY)
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
         Text(`${this.scoreValue}`)
           .fontSize(36)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#059669')
+          .fontColor(PRIMARY)
       }
       .width('100%')
 
       Progress({ value: this.scoreValue, total: 100, type: ProgressType.Linear })
         .width('100%')
-        .color('#16A34A')
+        .color(PRIMARY)
         .backgroundColor('#E5E7EB')
 
       ForEach(this.suggestions, (suggestion: string) => {
-        Text(`• ${suggestion}`)
+        Text(`\u2022 ${suggestion}`)
           .fontSize(13)
           .fontColor('#1F2937')
           .lineHeight(20)
@@ -533,8 +535,8 @@ struct Index {
     .width('100%')
     .padding(16)
     .borderRadius(16)
-    .backgroundColor('#ECFDF3')
-    .border({ width: 1, color: '#A7F3D0' })
+    .backgroundColor(PRIMARY_LIGHT)
+    .border({ width: 1, color: PRIMARY_BORDER })
   }
 
   @Builder
@@ -547,7 +549,7 @@ struct Index {
       .margin({ right: 8, bottom: 8 })
       .borderRadius(12)
       .backgroundColor(this.getTemplateSoftColor())
-      .border({ width: 1, color: '#C7D2FE' })
+      .border({ width: 1, color: PRIMARY_BORDER })
   }
 
   @Builder
@@ -559,14 +561,14 @@ struct Index {
           .height(size)
           .borderRadius(radius)
           .objectFit(ImageFit.Cover)
-          .border({ width: 2, color: '#E0E7FF' })
+          .border({ width: 2, color: BORDER_DEFAULT })
       } else {
         Image(this.previewData.photoUri)
           .width(size)
           .height(size)
           .borderRadius(radius)
           .objectFit(ImageFit.Cover)
-          .border({ width: 2, color: '#E0E7FF' })
+          .border({ width: 2, color: BORDER_DEFAULT })
       }
     } else {
       Text(this.previewData.name.substring(0, 1))
@@ -577,7 +579,7 @@ struct Index {
         .width(size)
         .height(size)
         .borderRadius(radius)
-        .backgroundColor('#4F46E5')
+        .backgroundColor(PRIMARY)
     }
   }
 
@@ -624,7 +626,7 @@ struct Index {
     .padding(10)
     .borderRadius(12)
     .backgroundColor('#F8FAFF')
-    .border({ width: 1, color: '#E0E7FF' })
+    .border({ width: 1, color: BORDER_DEFAULT })
   }
 
   @Builder
@@ -673,61 +675,92 @@ struct Index {
     }
     .width('100%')
     .padding(18)
-    .borderRadius(12)
+    .borderRadius(16)
     .backgroundColor('#FFFFFF')
     .border({ width: 1, color: '#CBD5E1' })
   }
 
   @Builder
   private technicalResumePreview() {
-      Column({ space: 0 }) {
-      Column({ space: 8 }) {
-        Row({ space: 12 }) {
-          this.photoBox(58, 8)
-          Column({ space: 4 }) {
-            Text(this.previewData.name)
-              .fontSize(24)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-            Text(this.previewData.targetPosition)
-              .fontSize(14)
-              .fontColor('#BFDBFE')
-            Text(`${this.previewData.phone} ｜ ${this.previewData.email}`)
-              .fontSize(12)
-              .fontColor('#DBEAFE')
-          }
-          .alignItems(HorizontalAlign.Start)
-          .layoutWeight(1)
+    Column({ space: 0 }) {
+      Row() {
+        Column({ space: 4 }) {
+          Text(this.previewData.name)
+            .fontSize(24)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#FFFFFF')
+          Text(this.previewData.targetPosition)
+            .fontSize(14)
+            .fontColor('#BFDBFE')
+          Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`)
+            .fontSize(11)
+            .fontColor('#93C5FD')
         }
-        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .layoutWeight(1)
       }
       .width('100%')
       .padding(16)
-      .backgroundColor('#312E81')
+      .backgroundColor('#1E3A8A')
 
-      Column({ space: 14 }) {
-        Column({ space: 8 }) {
-          Text('核心技术栈')
-            .fontSize(15)
+      Row() {
+        Column({ space: 10 }) {
+          this.photoBox(58, 8)
+          Row()
+            .width('100%')
+            .height(1)
+            .backgroundColor('rgba(255,255,255,0.2)')
+          Text('技能')
+            .fontSize(12)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#312E81')
+            .fontColor('#BFDBFE')
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.previewData.skillTags, (tag: string) => {
-              this.skillTag(tag)
+              Text(tag)
+                .fontSize(11)
+                .fontColor('#DBEAFE')
+                .padding({ left: 9, right: 9, top: 5, bottom: 5 })
+                .margin({ right: 6, bottom: 6 })
+                .borderRadius(12)
+                .backgroundColor('rgba(255,255,255,0.15)')
+                .border({ width: 1, color: 'rgba(255,255,255,0.2)' })
             }, (tag: string) => tag)
           }
           .width('100%')
+          Row()
+            .width('100%')
+            .height(1)
+            .backgroundColor('rgba(255,255,255,0.2)')
+          ForEach(this.previewData.sidebarSections, (section: ResumePreviewSection) => {
+            Column({ space: 3 }) {
+              Text(section.title)
+                .fontSize(12)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#BFDBFE')
+              Text(section.content)
+                .fontSize(11)
+                .fontColor('#93C5FD')
+                .lineHeight(16)
+                .width('100%')
+            }
+            .alignItems(HorizontalAlign.Start)
+            .width('100%')
+          }, (section: ResumePreviewSection) => section.title)
         }
-        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .width('35%')
         .padding(12)
-        .borderRadius(12)
-        .backgroundColor('#EEF2FF')
-        .border({ width: 1, color: '#C7D2FE' })
+        .backgroundColor('#1E3A8A')
 
-        ForEach(this.previewData.mainSections, (section: ResumePreviewSection, index?: number) => {
-          if (index === 1) {
-            Column({ space: 8 }) {
-              Text('重点项目')
+        Column({ space: 12 }) {
+          Text(this.previewData.summary)
+            .fontSize(12)
+            .fontColor('#374151')
+            .lineHeight(18)
+            .width('100%')
+          ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
+            Column({ space: 6 }) {
+              Text(section.title)
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .fontColor('#1E3A8A')
@@ -743,24 +776,35 @@ struct Index {
             .borderRadius(12)
             .backgroundColor('#F8FAFF')
             .border({ width: 1, color: '#C7D2FE' })
-          } else {
-            this.resumeSection(section)
-          }
-        }, (section: ResumePreviewSection) => section.title)
+          }, (section: ResumePreviewSection) => section.title)
+        }
+        .layoutWeight(1)
+        .padding(14)
+        .backgroundColor('#FFFFFF')
       }
       .width('100%')
-      .padding(16)
-      .backgroundColor('#FFFFFF')
     }
     .width('100%')
     .borderRadius(16)
     .clip(true)
     .border({ width: 1, color: '#A5B4FC' })
+    .backgroundColor('#FFFFFF')
+  }
+
+  private getMergedCampusSections(): ResumePreviewSection[] {
+    const allSections: ResumePreviewSection[] = [];
+    for (let i = 0; i < this.previewData.sidebarSections.length; i++) {
+      allSections.push(this.previewData.sidebarSections[i]);
+    }
+    for (let i = 0; i < this.previewData.mainSections.length; i++) {
+      allSections.push(this.previewData.mainSections[i]);
+    }
+    return allSections;
   }
 
   @Builder
   private campusResumePreview() {
-      Column({ space: 14 }) {
+    Column({ space: 12 }) {
       Row({ space: 12 }) {
         this.photoBox(64, 32)
         Column({ space: 6 }) {
@@ -771,7 +815,7 @@ struct Index {
           Text(this.previewData.targetPosition)
             .fontSize(14)
             .fontColor('#7C3AED')
-          Text(`${this.previewData.phone} ｜ ${this.previewData.email}`)
+          Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`)
             .fontSize(12)
             .fontColor('#6B7280')
         }
@@ -784,46 +828,55 @@ struct Index {
       .backgroundColor('#F5F3FF')
       .border({ width: 1, color: '#DDD6FE' })
 
-      Column({ space: 10 }) {
-        ForEach(this.previewData.sidebarSections, (section: ResumePreviewSection) => {
-          this.compactSection(section)
-        }, (section: ResumePreviewSection) => section.title)
-      }
-      .width('100%')
-
-      Column({ space: 12 }) {
-        ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
-          Row({ space: 10 }) {
-            Column()
-              .width(10)
-              .height(10)
-              .borderRadius(5)
-              .backgroundColor('#7C3AED')
-              .margin({ top: 6 })
-            Column({ space: 5 }) {
-              Text(section.title)
-                .fontSize(15)
-                .fontWeight(FontWeight.Bold)
-                .fontColor('#111827')
-              Text(section.content)
-                .fontSize(13)
-                .fontColor('#374151')
-                .lineHeight(20)
-                .width('100%')
-            }
-            .alignItems(HorizontalAlign.Start)
-            .layoutWeight(1)
-          }
-          .alignItems(VerticalAlign.Top)
-          .width('100%')
-        }, (section: ResumePreviewSection) => section.title)
-      }
-      .width('100%')
+      Text(this.previewData.summary)
+        .fontSize(12)
+        .fontColor('#4B5563')
+        .lineHeight(18)
+        .width('100%')
 
       Flex({ wrap: FlexWrap.Wrap }) {
         ForEach(this.previewData.skillTags, (tag: string) => {
           this.skillTag(tag)
         }, (tag: string) => tag)
+      }
+      .width('100%')
+
+      Column({ space: 0 }) {
+        ForEach(this.getMergedCampusSections(), (section: ResumePreviewSection, index: number) => {
+          Row({ space: 8 }) {
+            Column() {
+              Circle()
+                .width(8)
+                .height(8)
+                .fill('#7C3AED')
+              if (index < this.getMergedCampusSections().length - 1) {
+                Column()
+                  .width(2)
+                  .height(40)
+                  .backgroundColor('#DDD6FE')
+              }
+            }
+            .alignItems(HorizontalAlign.Center)
+            .width(20)
+
+            Column({ space: 5 }) {
+              Text(section.title)
+                .fontSize(14)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#7C3AED')
+              Text(section.content)
+                .fontSize(13)
+                .fontColor('#1F2937')
+                .lineHeight(19)
+                .width('100%')
+            }
+            .alignItems(HorizontalAlign.Start)
+            .layoutWeight(1)
+            .padding({ bottom: 16 })
+          }
+          .width('100%')
+          .alignItems(VerticalAlign.Top)
+        }, (section: ResumePreviewSection, index: number) => `${index}_${section.title}`)
       }
       .width('100%')
     }
@@ -837,51 +890,54 @@ struct Index {
   @Builder
   private executiveResumePreview() {
     Column({ space: 14 }) {
-      Row({ space: 12 }) {
-        Column({ space: 4 }) {
-          Text(this.previewData.name)
-            .fontSize(28)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#111827')
-          Text(this.previewData.targetPosition)
-            .fontSize(13)
-            .fontColor('#92400E')
-            .fontWeight(FontWeight.Medium)
-          Text(`${this.previewData.phone} ｜ ${this.previewData.email}`)
-            .fontSize(11)
-            .fontColor('#6B7280')
-        }
-        .alignItems(HorizontalAlign.Start)
-        .layoutWeight(1)
-        this.photoBox(68, 10)
+      Column({ space: 4 }) {
+        Text(this.previewData.name)
+          .fontSize(28)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#111827')
+        Text(this.previewData.targetPosition)
+          .fontSize(13)
+          .fontColor('#92400E')
+          .fontWeight(FontWeight.Medium)
+        Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`)
+          .fontSize(11)
+          .fontColor('#6B7280')
       }
+      .alignItems(HorizontalAlign.Center)
       .width('100%')
 
       Row()
         .width('100%')
-        .height(3)
+        .height(2)
         .backgroundColor('#B45309')
         .borderRadius(2)
 
-      Column({ space: 10 }) {
+      Text(this.previewData.summary)
+        .fontSize(13)
+        .fontColor('#374151')
+        .lineHeight(20)
+        .width('100%')
+
+      Flex({ wrap: FlexWrap.Wrap }) {
         ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
           Column({ space: 5 }) {
             Text(section.title)
-              .fontSize(14)
+              .fontSize(13)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#111827')
+              .fontColor('#92400E')
             Text(section.content)
               .fontSize(12)
-              .fontColor('#374151')
+              .fontColor('#1F2937')
               .lineHeight(19)
               .width('100%')
           }
           .alignItems(HorizontalAlign.Start)
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+          .width('48%')
+          .padding(10)
           .borderRadius(12)
           .backgroundColor('#FFFBEB')
           .border({ width: 1, color: '#FDE68A' })
+          .margin({ right: '2%', bottom: 10 })
         }, (section: ResumePreviewSection) => section.title)
       }
       .width('100%')
@@ -890,7 +946,7 @@ struct Index {
     .padding(18)
     .borderRadius(16)
     .backgroundColor('#FFFFFF')
-    .border({ width: 1, color: '#F59E0B' })
+    .border({ width: 1, color: '#D4AF37' })
   }
 
   @Builder
@@ -904,25 +960,31 @@ struct Index {
         Text(this.previewData.targetPosition)
           .fontSize(14)
           .fontColor('#4B5563')
-        Text(`${this.previewData.phone} ｜ ${this.previewData.email}`)
+        Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`)
           .fontSize(11)
           .fontColor('#6B7280')
       }
       .alignItems(HorizontalAlign.Start)
       .width('100%')
 
-      Divider().strokeWidth(1).color('#9CA3AF')
+      Divider().strokeWidth(1).color('#E5E7EB')
+
+      Text(this.previewData.summary)
+        .fontSize(13)
+        .fontColor('#4B5563')
+        .lineHeight(20)
+        .width('100%')
 
       ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
         Column({ space: 6 }) {
           Text(section.title)
             .fontSize(13)
             .fontWeight(FontWeight.Bold)
-            .fontColor('#111827')
-          Text(section.content)
-            .fontSize(12)
             .fontColor('#374151')
-            .lineHeight(19)
+          Text(section.content)
+            .fontSize(13)
+            .fontColor('#4B5563')
+            .lineHeight(20)
             .width('100%')
         }
         .alignItems(HorizontalAlign.Start)
@@ -939,18 +1001,18 @@ struct Index {
   @Builder
   private blackGoldResumePreview() {
     Column({ space: 0 }) {
-      Column({ space: 12 }) {
+      Column({ space: 0 }) {
         Row({ space: 12 }) {
           this.photoBox(62, 31)
-          Column({ space: 5 }) {
+          Column({ space: 4 }) {
             Text(this.previewData.name)
-              .fontSize(26)
+              .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor('#F9FAFB')
             Text(this.previewData.targetPosition)
               .fontSize(13)
               .fontColor('#FCD34D')
-            Text(`${this.previewData.phone} ｜ ${this.previewData.email}`)
+            Text(`${this.previewData.phone} \uFF5C ${this.previewData.email}`)
               .fontSize(11)
               .fontColor('#D1D5DB')
           }
@@ -960,47 +1022,76 @@ struct Index {
         .width('100%')
       }
       .width('100%')
-      .padding(16)
+      .padding(14)
       .backgroundColor('#111827')
 
-      Column({ space: 12 }) {
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.previewData.skillTags, (tag: string) => {
-            Text(tag)
-              .fontSize(11)
-              .fontWeight(FontWeight.Medium)
-              .fontColor('#111827')
-              .padding({ left: 9, right: 9, top: 5, bottom: 5 })
-              .margin({ right: 8, bottom: 8 })
-              .borderRadius(12)
-              .backgroundColor('#FCD34D')
-          }, (tag: string) => tag)
-        }
-        .width('100%')
-
-        ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
-          Column({ space: 6 }) {
-            Text(section.title)
-              .fontSize(13)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#92400E')
-            Text(section.content)
-              .fontSize(12)
-              .fontColor('#1F2937')
-              .lineHeight(19)
+      Row() {
+        Column({ space: 12 }) {
+          ForEach(this.previewData.sidebarSections, (section: ResumePreviewSection) => {
+            if (section.title !== 'SKILLS') {
+              Column({ space: 3 }) {
+                Text(section.title)
+                  .fontSize(11)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#D4AF37')
+                Text(section.content)
+                  .fontSize(10)
+                  .fontColor('#D1D5DB')
+                  .lineHeight(15)
+                  .width('100%')
+              }
+              .alignItems(HorizontalAlign.Start)
               .width('100%')
+            }
+          }, (section: ResumePreviewSection) => section.title)
+
+          Text('SKILLS')
+            .fontSize(11)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#D4AF37')
+          Flex({ wrap: FlexWrap.Wrap }) {
+            ForEach(this.previewData.skillTags, (tag: string) => {
+              Text(tag)
+                .fontSize(10)
+                .fontColor('#111827')
+                .padding({ left: 7, right: 7, top: 4, bottom: 4 })
+                .margin({ right: 5, bottom: 5 })
+                .borderRadius(10)
+                .backgroundColor('#FCD34D')
+            }, (tag: string) => tag)
           }
-          .alignItems(HorizontalAlign.Start)
           .width('100%')
-          .padding(12)
-          .borderRadius(12)
-          .backgroundColor('#FFFBEB')
-          .border({ width: 1, color: '#FDE68A' })
-        }, (section: ResumePreviewSection) => section.title)
+        }
+        .alignItems(HorizontalAlign.Start)
+        .width('35%')
+        .padding(14)
+
+        Column()
+          .width(1)
+          .backgroundColor('rgba(212,175,55,0.3)')
+
+        Column({ space: 12 }) {
+          ForEach(this.previewData.mainSections, (section: ResumePreviewSection) => {
+            Column({ space: 4 }) {
+              Text(section.title)
+                .fontSize(13)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#D4AF37')
+              Text(section.content)
+                .fontSize(12)
+                .fontColor('#D1D5DB')
+                .lineHeight(18)
+                .width('100%')
+            }
+            .alignItems(HorizontalAlign.Start)
+            .width('100%')
+          }, (section: ResumePreviewSection) => section.title)
+        }
+        .layoutWeight(1)
+        .padding(14)
       }
       .width('100%')
-      .padding(16)
-      .backgroundColor('#FFFFFF')
+      .backgroundColor('#1F2937')
     }
     .width('100%')
     .borderRadius(16)
@@ -1045,14 +1136,14 @@ struct Index {
                     .height(92)
                     .borderRadius(10)
                     .objectFit(ImageFit.Cover)
-                    .border({ width: 1, color: '#C7D2FE' })
+                    .border({ width: 1, color: PRIMARY_BORDER })
                 } else {
                   Image(this.photoUri)
                     .width(76)
                     .height(92)
                     .borderRadius(10)
                     .objectFit(ImageFit.Cover)
-                    .border({ width: 1, color: '#C7D2FE' })
+                    .border({ width: 1, color: PRIMARY_BORDER })
                 }
               } else {
                 Column({ space: 4 }) {
@@ -1068,15 +1159,15 @@ struct Index {
                 .width(76)
                 .height(92)
                 .borderRadius(10)
-                .backgroundColor('#EEF2FF')
-                .border({ width: 1, color: '#C7D2FE' })
+                .backgroundColor(PRIMARY_LIGHT)
+                .border({ width: 1, color: PRIMARY_BORDER })
               }
               Column({ space: 8 }) {
                 Text(this.photoUri.length > 0 ? '已选择照片' : '还没有选择照片')
                   .fontSize(14)
                   .fontWeight(FontWeight.Medium)
                   .fontColor('#344054')
-                Text(this.photoUri.length > 0 ? '照片会同步显示在三套简历模板中。' : '建议选择一张正面证件照，方便测试模板效果。')
+                Text(this.photoUri.length > 0 ? '照片会显示在简历预览中' : '请选择一张证件照，显示在简历预览中')
                   .fontSize(12)
                   .fontColor('#667085')
                   .lineHeight(18)
@@ -1085,7 +1176,7 @@ struct Index {
                   Button('选择照片')
                     .height(36)
                     .fontSize(13)
-                    .fontColor('#3730A3')
+                    .fontColor(PRIMARY_DARK)
                     .backgroundColor('#E0E7FF')
                     .borderRadius(10)
                     .layoutWeight(1)
@@ -1129,7 +1220,7 @@ struct Index {
             .padding(10)
             .borderRadius(12)
             .backgroundColor('#F8FAFF')
-            .border({ width: 1, color: '#DDE7FF' })
+            .border({ width: 1, color: BORDER_DEFAULT })
           }
           .width('100%')
           this.singleLineInput('联系电话', this.phone, '例如：13800000000', false, (value: string) => {
@@ -1161,7 +1252,7 @@ struct Index {
         .padding(16)
         .borderRadius(16)
         .backgroundColor('#FFFFFF')
-        .border({ width: 1, color: '#DDE7FF' })
+        .border({ width: 1, color: BORDER_DEFAULT })
 
         Column({ space: 12 }) {
           this.sectionTitle('模板选择', PROMPT_EXPLANATION)
@@ -1171,7 +1262,7 @@ struct Index {
         .padding(16)
         .borderRadius(16)
         .backgroundColor('#FFFFFF')
-        .border({ width: 1, color: '#DDE7FF' })
+        .border({ width: 1, color: BORDER_DEFAULT })
 
         if (this.errorMessage.length > 0) {
           Text(this.errorMessage)
@@ -1199,7 +1290,7 @@ struct Index {
           Button('填充演示数据')
             .height(44)
             .fontSize(15)
-            .fontColor('#3730A3')
+            .fontColor(PRIMARY_DARK)
             .backgroundColor('#E0E7FF')
             .layoutWeight(1)
             .borderRadius(12)
@@ -1218,7 +1309,7 @@ struct Index {
             .height(44)
             .fontSize(15)
             .fontColor('#FFFFFF')
-            .backgroundColor('#4F46E5')
+            .backgroundColor(PRIMARY)
             .layoutWeight(1)
             .borderRadius(12)
             .enabled(!this.isGenerating)
@@ -1241,32 +1332,32 @@ struct Index {
           if (this.generatedResume.length > 0) {
             this.resumePreviewCard()
           } else {
-            Text('点击“生成简历”后，这里会显示带版式的简历预览。')
+            Text('点击"生成简历"后，这里会显示带版式的简历预览。')
               .fontSize(14)
               .fontColor('#5B6475')
               .padding(14)
               .width('100%')
               .borderRadius(12)
               .backgroundColor('#F8FAFF')
-              .border({ width: 1, color: '#DDE7FF' })
+              .border({ width: 1, color: BORDER_DEFAULT })
           }
         }
         .width('100%')
         .padding(16)
         .borderRadius(16)
         .backgroundColor('#FFFFFF')
-        .border({ width: 1, color: '#DDE7FF' })
+        .border({ width: 1, color: BORDER_DEFAULT })
 
         Column({ space: 12 }) {
           this.sectionTitle('在线编辑', '这里保留纯文本简历，方便复制、修改和后续接入 PDF 导出。')
-          TextArea({ text: this.editedResume, placeholder: '点击“生成简历”后，这里会显示可编辑简历。' })
+          TextArea({ text: this.editedResume, placeholder: '点击"生成简历"后，这里会显示可编辑简历。' })
             .height(260)
             .fontSize(14)
             .lineHeight(22)
             .fontColor('#111827')
-            .backgroundColor('#F8FAFF')
+            .backgroundColor(PRIMARY_LIGHT)
             .borderRadius(12)
-            .border({ width: 1, color: '#DDE7FF' })
+            .border({ width: 1, color: BORDER_DEFAULT })
             .onChange((value: string) => {
               this.editedResume = value;
               this.exportStatus = '';
@@ -1276,7 +1367,7 @@ struct Index {
             Button(this.isScoring ? '评分中...' : '更新评分')
               .height(42)
               .fontSize(14)
-              .fontColor('#3730A3')
+              .fontColor(PRIMARY_DARK)
               .backgroundColor('#E0E7FF')
               .layoutWeight(1)
               .borderRadius(12)
@@ -1329,7 +1420,7 @@ struct Index {
         .padding(16)
         .borderRadius(16)
         .backgroundColor('#FFFFFF')
-        .border({ width: 1, color: '#DDE7FF' })
+        .border({ width: 1, color: BORDER_DEFAULT })
 
         this.scorePanel()
       }
@@ -1338,6 +1429,6 @@ struct Index {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#EEF4FF')
+    .backgroundColor(BG_PAGE)
   }
 }
