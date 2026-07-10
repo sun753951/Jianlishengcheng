@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import Response
 
-from server.models import GenerateResumeResponse, ResumeFormData, ResumeTextRequest, ScoreResumeResponse
+from server.models import GenerateResumeResponse, PdfExportRequest, ResumeFormData, ResumeTextRequest, ScoreResumeResponse
 from server.pdf_service import build_resume_pdf
 from server.resume_service import generate_resume, score_resume
 
@@ -28,8 +28,19 @@ def score_resume_api(form_data: ResumeFormData) -> ScoreResumeResponse:
 
 
 @app.post("/api/resume/export/pdf")
-def export_resume_pdf_api(request: ResumeTextRequest) -> Response:
-    pdf_bytes = build_resume_pdf(request.resumeText)
+def export_resume_pdf_api(request: PdfExportRequest) -> Response:
+    pdf_bytes = build_resume_pdf(
+        name=request.name,
+        phone=request.phone,
+        email=request.email,
+        target_position=request.targetPosition,
+        education=request.education,
+        skills=request.skills,
+        work_experience=request.workExperience,
+        project_experience=request.projectExperience,
+        self_evaluation=request.selfEvaluation,
+        template_type=request.templateType,
+    )
     safe_file_name = "resume.pdf"
     return Response(
         content=pdf_bytes,

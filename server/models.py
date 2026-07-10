@@ -27,8 +27,21 @@ class ResumeFormData(BaseModel):
     templateType: TemplateType = TemplateType.technical
 
 
-class ResumeTextRequest(ResumeFormData):
+class ResumeTextRequest(BaseModel):
     resumeText: str = Field(min_length=1)
+
+
+class PdfExportRequest(BaseModel):
+    name: str = ""
+    phone: str = ""
+    email: str = ""
+    targetPosition: str = ""
+    education: str = ""
+    skills: str = ""
+    workExperience: str = ""
+    projectExperience: str = ""
+    selfEvaluation: str = ""
+    templateType: str = "standard"
 
 
 class ResumePreviewSection(BaseModel):

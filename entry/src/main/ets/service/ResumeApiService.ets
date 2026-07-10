@@ -40,7 +40,7 @@ interface ScoreResumeApiResponse {
 
 export interface PdfExportResult {
   fileName: string;
-  byteLength: number;
+  data: ArrayBuffer;
 }
 
 export function getTemplateApiValue(templateType: ResumeTemplateType): string {
@@ -103,22 +103,44 @@ function getResponseText(response: http.HttpResponse): string {
   return '';
 }
 
-async function postJson(path: string, body: object): Promise<http.HttpResponse> {
+async function postJson(path: string, body: Object): Promise<http.HttpResponse> {
   const request = http.createHttp();
   try {
-    try {
-      return await request.request(`${API_BASE_URL}${path}`, {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json'
-        },
-        extraData: JSON.stringify(body),
-        connectTimeout: 5000,
-        readTimeout: 10000
-      });
-    } catch (error) {
-      throw new Error('resume api request failed');
-    }
+    return await request.request(`${API_BASE_URL}${path}`, {
+      method: http.RequestMethod.POST,
+      header: { 'Content-Type': 'application/json' },
+      extraData: JSON.stringify(body),
+      expectDataType: http.HttpDataType.STRING,
+      connectTimeout: 2000,
+      readTimeout: 8000
+    });
+  } catch (error) {
+    const msg: string = (typeof error === 'object' && error !== null)
+      ? (error as Record<string, Object>)['message'] as string || JSON.stringify(error)
+      : `${error}`;
+    throw new Error(`API请求失败 [${path}]: ${msg}`);
+  } finally {
+    request.destroy();
+  }
+}
+
+/** PDF 导出专用：二进制响应 + 60s 长超时 */
+async function postForBinary(path: string, body: Object): Promise<http.HttpResponse> {
+  const request = http.createHttp();
+  try {
+    return await request.request(`${API_BASE_URL}${path}`, {
+      method: http.RequestMethod.POST,
+      header: { 'Content-Type': 'application/json' },
+      extraData: JSON.stringify(body),
+      expectDataType: http.HttpDataType.ARRAY_BUFFER,
+      connectTimeout: 5000,
+      readTimeout: 60000
+    });
+  } catch (error) {
+    const msg: string = (typeof error === 'object' && error !== null)
+      ? (error as Record<string, Object>)['message'] as string || JSON.stringify(error)
+      : `${error}`;
+    throw new Error(`PDF导出失败 [${path}]: ${msg}`);
   } finally {
     request.destroy();
   }
@@ -146,19 +168,15 @@ export async function requestScoreResume(formData: ResumeFormData, templateType:
 }
 
 export async function requestExportPdf(formData: ResumeFormData, templateType: ResumeTemplateType, resumeText: string): Promise<PdfExportResult> {
-  const response: http.HttpResponse = await postJson('/api/resume/export/pdf', createScoreResumeRequest(formData, templateType, resumeText));
+  const response: http.HttpResponse = await postForBinary('/api/resume/export/pdf',
+    createScoreResumeRequest(formData, templateType, resumeText));
   if (response.responseCode !== 200) {
-    throw new Error('resume pdf export api failed');
+    let detail: string = '';
+    if (typeof response.result === 'string') {
+      detail = response.result;
+    }
+    throw new Error('PDF 导出失败 (' + response.responseCode + ')' + (detail.length > 0 ? ': ' + detail : ''));
   }
-  const result: string | ArrayBuffer = response.result as string | ArrayBuffer;
-  let byteLength: number = 0;
-  if (typeof result === 'string') {
-    byteLength = result.length;
-  } else {
-    byteLength = result.byteLength;
-  }
-  return {
-    fileName: 'resume.pdf',
-    byteLength: byteLength
-  };
+  const pdfData: ArrayBuffer = response.result as ArrayBuffer;
+  return { fileName: 'resume.pdf', data: pdfData };
 }
